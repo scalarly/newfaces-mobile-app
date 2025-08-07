@@ -71,7 +71,7 @@ export const Sticker = forwardRef<RNView, StickerProps>(({
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text size="heading" weight="semiBold" color="onSurface">
+            <Text size="h3" weight="semibold" color="onSurface">
               {title}
             </Text>
             {subTitle && (

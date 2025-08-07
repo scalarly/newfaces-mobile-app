@@ -96,6 +96,22 @@ export const useNotifications = (options: UseNotificationsOptions = {}): UseNoti
   }, [navigationRef]);
 
   /**
+   * Refresh push token
+   */
+  const refreshToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const newToken = await notificationService.getToken();
+      setToken(newToken);
+      return newToken;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh token';
+      setError(errorMessage);
+      console.error('❌ Error refreshing token:', err);
+      return null;
+    }
+  }, []);
+
+  /**
    * Request notification permissions
    */
   const requestPermissions = useCallback(async (): Promise<boolean> => {
@@ -190,22 +206,6 @@ export const useNotifications = (options: UseNotificationsOptions = {}): UseNoti
       const errorMessage = err instanceof Error ? err.message : 'Failed to get notification settings';
       setError(errorMessage);
       console.error('❌ Error getting notification settings:', err);
-      return null;
-    }
-  }, []);
-
-  /**
-   * Refresh push token
-   */
-  const refreshToken = useCallback(async (): Promise<string | null> => {
-    try {
-      const newToken = await notificationService.getToken();
-      setToken(newToken);
-      return newToken;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh token';
-      setError(errorMessage);
-      console.error('❌ Error refreshing token:', err);
       return null;
     }
   }, []);

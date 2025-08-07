@@ -137,7 +137,7 @@ const initializeI18n = async (): Promise<void> => {
       react: {
         useSuspense: false, // Disable suspense to avoid issues with React Navigation
       },
-      compatibilityJSON: 'v3', // Use v3 format for compatibility
+      compatibilityJSON: 'v4', // Use v4 format for latest compatibility
     });
 };
 

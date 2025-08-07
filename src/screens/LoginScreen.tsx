@@ -4,21 +4,10 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  TextInput,
-  Button,
+  ImageBackground,
+  Image,
   Text,
-  Card,
-  Title,
-  HelperText,
-  ActivityIndicator,
-} from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Feather';
+} from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // Modern hooks and helpers
@@ -26,9 +15,12 @@ import { useApiPost } from '../hooks/useApi';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserToken } from '../hooks/useAsyncStorage';
 import { isValidEmail } from '../helpers/applicationUtils';
-import { colors, spacing } from '../helpers/theme';
 import { apiService } from '../helpers/request';
 import { RootStackParamList } from '../navigation/types';
+
+// Legacy-style components
+import { LegacyInput } from '../components/LegacyInput';
+import { LegacyButton } from '../components/LegacyButton';
 
 // Type definitions
 interface LoginData {
@@ -69,7 +61,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   // State management
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [secureTextEntry, setSecureTextEntry] = useState<boolean>(true);
+  const [hidePassword, setHidePassword] = useState<boolean>(true);
   const [errors, setErrors] = useState<LoginErrors>({});
 
   const validateForm = useCallback((): boolean => {
@@ -152,195 +144,168 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     } catch (error) {
       console.error('Login execution error:', error);
     }
-  }, [email, password, navigation, validateForm, executeLogin, setUserToken]);
+  }, [email, password, navigation, validateForm, executeLogin, setUserToken, loginState]);
 
-  const toggleSecureEntry = useCallback(() => {
-    setSecureTextEntry(!secureTextEntry);
-  }, [secureTextEntry]);
+  const togglePasswordVisibility = useCallback(() => {
+    setHidePassword(!hidePassword);
+  }, [hidePassword]);
 
   const navigateToForgotPassword = useCallback(() => {
     navigation.navigate('ForgotPassword');
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ImageBackground
+        source={require('../assets/images/login-background.jpg')}
+        style={styles.bgImage}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Title style={styles.title}>Welcome Back</Title>
-              <Text style={styles.subtitle}>
-                {t('mobile.login.subtitle')}
-              </Text>
-            </View>
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logo}
+            />
+          </Text>
+          {t('mobile.login.subtitle') && (
+            <Text style={styles.subTitle}>
+              {t('mobile.login.subtitle')}
+            </Text>
+          )}
+        </View>
+        
+        <View style={styles.loginForm}>
+          <LegacyInput
+            title={t('mobile.login.form.email')}
+            placeholder="Eg: johndoe@email.com"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.fieldInput}
+            error={errors['data.email'] || errors.email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+          />
+          
+          <LegacyInput
+            title={t('mobile.login.form.password')}
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.fieldInput}
+            error={errors['data.password'] || errors.password}
+            showPasswordToggle={true}
+            secureTextEntry={hidePassword}
+            onTogglePassword={togglePasswordVisibility}
+            autoComplete="password"
+            textContentType="password"
+          />
 
-            {/* Login Form */}
-            <Card style={styles.card}>
-              <Card.Content style={styles.cardContent}>
-                {/* Email Input */}
-                <TextInput
-                  label={t('mobile.login.form.email')}
-                  value={email}
-                  onChangeText={setEmail}
-                  mode="outlined"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  error={!!errors.email}
-                  disabled={loginState.loading}
-                  style={styles.input}
-                />
-                <HelperText type="error" visible={!!errors.email}>
-                  {errors.email}
-                </HelperText>
+          <LegacyButton
+            text={loginState.loading ? 'Signing in...' : t('mobile.login.form.continue')}
+            onPress={handleLogin}
+            disabled={loginState.loading}
+            loading={loginState.loading}
+            style={styles.btnPrimary}
+          />
 
-                {/* Password Input */}
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    label={t('mobile.login.form.password')}
-                    value={password}
-                    onChangeText={setPassword}
-                    mode="outlined"
-                    secureTextEntry={secureTextEntry}
-                    autoComplete="password"
-                    textContentType="password"
-                    error={!!errors.password}
-                    disabled={loginState.loading}
-                    style={styles.input}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeIconContainer}
-                    onPress={toggleSecureEntry}
-                    activeOpacity={0.7}
-                  >
-                    <Icon
-                      name={secureTextEntry ? 'eye-off' : 'eye'}
-                      size={20}
-                      color="#666"
-                    />
-                  </TouchableOpacity>
-                </View>
-                <HelperText type="error" visible={!!errors.password}>
-                  {errors.password}
-                </HelperText>
+          {/* Error Display */}
+          {loginState.error && (
+            <Text style={styles.errorText}>
+              {loginState.error}
+            </Text>
+          )}
 
-                {/* Login Button */}
-                <Button
-                  mode="contained"
-                  onPress={handleLogin}
-                  disabled={loginState.loading}
-                  style={styles.loginButton}
-                  contentStyle={styles.buttonContent}
-                >
-                  {loginState.loading ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    t('mobile.login.form.continue')
-                  )}
-                </Button>
-
-                {/* Error Display */}
-                {loginState.error && (
-                  <Text style={styles.errorText}>
-                    {loginState.error}
-                  </Text>
-                )}
-
-                {/* Forgot Password Link */}
-                <Button
-                  mode="text"
-                  onPress={navigateToForgotPassword}
-                  disabled={loginState.loading}
-                  style={styles.forgotPasswordButton}
-                >
-                  {t('mobile.login.forgotPassword')}
-                </Button>
-              </Card.Content>
-            </Card>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          <LegacyButton
+            text={t('mobile.login.forgotPassword')}
+            onPress={navigateToForgotPassword}
+            disabled={loginState.loading}
+            variant="text"
+            style={styles.forgotPasswordButton}
+          />
+        </View>
+      </ImageBackground>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  header: {
+    backgroundColor: '#f0e097',
     alignItems: 'center',
-    marginBottom: 40,
+    justifyContent: 'center',
+  },
+  bgImage: {
+    width: '100%',
+    height: '100%',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleSection: {
+    textAlign: 'center',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
+    fontSize: 50,
     textAlign: 'center',
   },
-  card: {
-    elevation: 4,
-    borderRadius: 12,
+  logo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
   },
-  cardContent: {
-    padding: 24,
+  subTitle: {
+    marginTop: 24,
+    fontSize: 14,
+    color: '#000',
+    textAlign: 'center',
   },
-  input: {
-    marginBottom: 8,
+  loginForm: {
+    backgroundColor: '#fff',
+    marginTop: 64,
+    marginLeft: 40,
+    marginRight: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingTop: 24,
+    paddingBottom: 24,
+    paddingLeft: 34,
+    paddingRight: 34,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    width: '80%',
   },
-  passwordContainer: {
-    position: 'relative',
-    marginBottom: 8,
+  fieldInput: {
+    width: 'auto',
+    color: '#111111',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingLeft: 15,
+    paddingRight: 15,
+    marginTop: 10,
   },
-  eyeIconContainer: {
-    position: 'absolute',
-    right: 12,
-    top: 16,
-    padding: 8,
-    zIndex: 1,
-  },
-  loginButton: {
-    marginTop: 16,
-    marginBottom: 8,
-    borderRadius: 8,
-  },
-  buttonContent: {
-    paddingVertical: 8,
+  btnPrimary: {
+    marginTop: 32,
+    backgroundColor: '#0052CD',
+    borderRadius: 3,
   },
   forgotPasswordButton: {
-    marginTop: 8,
+    alignSelf: 'center',
+    marginTop: 16,
   },
   errorText: {
     fontSize: 14,
-    color: colors.error,
+    color: '#dc3545',
     textAlign: 'center',
-    marginTop: spacing.sm,
+    marginTop: 16,
   },
 });
 

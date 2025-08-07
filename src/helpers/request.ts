@@ -39,7 +39,7 @@ export interface RequestOptions {
 
 class ApiService {
   private axiosInstance: AxiosInstance;
-  private readonly baseURL: string;
+  public readonly baseURL: string;
   private readonly apiURL: string;
 
   constructor(language: string = 'en') {

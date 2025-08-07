@@ -15,5 +15,9 @@ export { BottomNavigation } from './BottomNavigation';
 export { RefreshControl } from './RefreshControl';
 export { LanguageSelector } from './LanguageSelector';
 
+// Legacy Components
+export { LegacyButton } from './LegacyButton';
+export { LegacyInput } from './LegacyInput';
+
 // Common Layout Patterns
 export { flexPatterns } from './common';
