@@ -25,6 +25,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCollection } from '../hooks/useCollection';
 import { useRefresh } from '../hooks/useRefresh';
 import { useUserId } from '../hooks/useAsyncStorage';
+import { useTranslation } from '../hooks/useTranslation';
 import { getDisplayName, getUserInitials } from '../helpers/applicationUtils';
 import { formatDate, getRelativeTime } from '../helpers/dateUtils';
 import { colors, spacing } from '../helpers/theme';
@@ -75,6 +76,7 @@ interface Props {
 
 const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   // Modern hooks
+  const { t } = useTranslation();
   const { userId } = useUserId();
   
   // State management
@@ -234,7 +236,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <Header
-        title="Messages"
+        title={t('mobile.titles.messages')}
         showNotification
       />
 
@@ -260,7 +262,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
                 styles.segmentButtonText,
                 selectedTab === 'email' && styles.segmentButtonTextActive
               ]}>
-                Email
+                {t('mobile.messages.email')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -280,7 +282,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
                 styles.segmentButtonText,
                 selectedTab === 'whatsapp' && styles.segmentButtonTextActive
               ]}>
-                WhatsApp
+                {t('mobile.messages.whatsapp')}
               </Text>
             </TouchableOpacity>
           </View>

@@ -8,6 +8,7 @@ import { Text, Title } from '../components/Typography';
 import { Calendar } from '../components/Calendar';
 import { Header } from '../components/Header';
 import { BottomNavigation } from '../components/BottomNavigation';
+import { useTranslation } from '../hooks/useTranslation';
 
 
 interface CalendarEvent {
@@ -18,6 +19,7 @@ interface CalendarEvent {
 }
 
 const CalendarScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   
   // Sample events for demonstration
@@ -54,7 +56,7 @@ const CalendarScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header 
-        title="Calendar" 
+        title={t('mobile.titles.calendar')} 
         showNotification 
       />
       

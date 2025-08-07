@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // Modern hooks and helpers
 import { useApiPost } from '../hooks/useApi';
+import { useTranslation } from '../hooks/useTranslation';
 import { useUserToken } from '../hooks/useAsyncStorage';
 import { isValidEmail } from '../helpers/applicationUtils';
 import { colors, spacing } from '../helpers/theme';
@@ -61,6 +62,7 @@ interface Props {
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   // Modern hooks
+  const { t } = useTranslation();
   const { login: setUserToken } = useUserToken();
   const { state: loginState, execute: executeLogin } = useApiPost<LoginResponseData>('jwt');
 
@@ -175,7 +177,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.header}>
               <Title style={styles.title}>Welcome Back</Title>
               <Text style={styles.subtitle}>
-                Sign in to continue to your account
+                {t('mobile.login.subtitle')}
               </Text>
             </View>
 
@@ -184,7 +186,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <Card.Content style={styles.cardContent}>
                 {/* Email Input */}
                 <TextInput
-                  label="Email"
+                  label={t('mobile.login.form.email')}
                   value={email}
                   onChangeText={setEmail}
                   mode="outlined"
@@ -203,7 +205,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 {/* Password Input */}
                 <View style={styles.passwordContainer}>
                   <TextInput
-                    label="Password"
+                    label={t('mobile.login.form.password')}
                     value={password}
                     onChangeText={setPassword}
                     mode="outlined"
@@ -241,7 +243,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   {loginState.loading ? (
                     <ActivityIndicator size="small" color="white" />
                   ) : (
-                    'Sign In'
+                    t('mobile.login.form.continue')
                   )}
                 </Button>
 
@@ -259,7 +261,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   disabled={loginState.loading}
                   style={styles.forgotPasswordButton}
                 >
-                  Forgot Password?
+                  {t('mobile.login.forgotPassword')}
                 </Button>
               </Card.Content>
             </Card>

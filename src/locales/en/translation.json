@@ -1,0 +1,89 @@
+{
+  "general": {
+    "selectLanguage": "Select Language",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading..",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "copyright": "New Faces © 2018 All Rights Reserved",
+    "title": "New Faces",
+    "tagline": "For Fashion, TV and Cinema",
+    "loginPrompt": "Please use your credentials to login."
+  },
+  "mobile": {
+    "titles": {
+      "calendar": "Calendar",
+      "notification": "Notification",
+      "messages": "Messages",
+      "profile": "Profile",
+      "payment_details": "Payment Details",
+      "emi_details": "EMI Details",
+      "gallery": "Gallery"
+    },
+    "login": {
+      "subtitle": "For Fashion, TV & Cinema",
+      "forgotPassword": "Forgot Password?",
+      "form": {
+        "email": "Email",
+        "password": "Password",
+        "continue": "Continue"
+      }
+    },
+    "messages": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "no_name": "No Name"
+    },
+    "profile": {
+      "upcoming": "Upcoming",
+      "ongoing": "Ongoing",
+      "completed": "Completed",
+      "course": "Course",
+      "view_payment_details": "View Payment Details"
+    },
+    "payment_details": {
+      "package": "Package",
+      "total_amount": "Total Amount",
+      "payment_type": "Type of Payment",
+      "upfront_payment": "Upfront Payment",
+      "total_upfront": "Total Upfront Amount",
+      "total_upfront_paid": "Total Upfront Amount Paid",
+      "balance_upfront": "Balance Upfront Amount",
+      "upfront_amount": "Upfront Amount",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "deadline": "Deadline",
+      "emi_payment": "EMI Payment",
+      "view_emi": "View EMI Details",
+      "residual_amount": "Residual Amount",
+      "emi_paid": "EMI Paid",
+      "balance_residual_amount": "Balance Residual Amount"
+    },
+    "emi_details": {
+      "date": "Payment Date",
+      "amount": "Amount",
+      "type": "Type"
+    },
+    "gallery": {
+      "download_album": "Download Album"
+    },
+    "logout": {
+      "logout": "Logout",
+      "confirmation": "Are you sure you want to logout?"
+    }
+  }
+}

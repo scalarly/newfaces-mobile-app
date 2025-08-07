@@ -8,6 +8,9 @@ import AppNavigator from './navigation/AppNavigator';
 import { notificationService } from './services/NotificationService';
 import { useNotifications } from './hooks/useNotifications';
 
+// Initialize i18n
+import './locales/i18n';
+
 // Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {

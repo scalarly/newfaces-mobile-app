@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/Feather';
 
 // Modern hooks and helpers
 import { useCollection } from '../hooks/useCollection';
+import { useTranslation } from '../hooks/useTranslation';
 import { getFullName, getDisplayName, getUserInitials, getFormattedLocation } from '../helpers/applicationUtils';
 import { formatDate, formatDateShort } from '../helpers/dateUtils';
 import { colors, spacing } from '../helpers/theme';
@@ -21,6 +22,7 @@ import { SecureStorage } from '../helpers/secureStorage';
 import { Text } from '../components/Typography';
 import { Header } from '../components/Header';
 import { BottomNavigation } from '../components/BottomNavigation';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { RootStackParamList } from '../navigation/types';
 
 // Type definitions
@@ -75,6 +77,7 @@ interface Props {
 }
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useTranslation();
   const [profileData, setProfileData] = useState<User | null>(null);
   const { collection, updateCollection } = useCollection<Package>('me/packages');
 
@@ -116,19 +119,18 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Profile"
+        title={t('mobile.titles.profile')}
         noShadow
         showNotification
-        // Debug button removed from UI
-        // rightComponent={
-        //   __DEV__ ? (
-        //     <TouchableWithoutFeedback onPress={handleNotificationDebug}>
-        //       <View style={styles.debugButton}>
-        //         <RNText style={styles.debugButtonText}>🔔 Debug</RNText>
-        //       </View>
-        //     </TouchableWithoutFeedback>
-        //   ) : undefined
-        // }
+        rightComponent={
+          <View style={styles.headerRightSection}>
+            <LanguageSelector 
+              variant="button" 
+              showLanguageName={false}
+              style={styles.headerLanguageSelector}
+            />
+          </View>
+        }
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -136,44 +138,46 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       >
         {profileData && (
           <View style={styles.profileTopSection}>
-            <View style={styles.profilePic}>
-              <View style={styles.profilePicPlaceholder}>
-                <Text style={styles.profileInitials}>
-                  {profileData.lead_details.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.profileDetails}>
-              <Text style={[styles.profileRow, styles.profileName]}>
-                {profileData.lead_details.name}
-              </Text>
-              <Text style={[styles.profileRow, styles.profileEmail]}>
-                {profileData.email}
-              </Text>
-              <View style={[styles.profileRow, styles.profileDOBContact]}>
-                <View style={styles.profileDOB}>
-                  <Icon 
-                    name="calendar" 
-                    size={16} 
-                    color={colors.primary} 
-                    style={styles.topCalendarIcon}
-                  />
-                  <Text style={styles.profileDOBText}>
-                    {profileData.lead_details.date_of_birth || '-'}
+            <View style={styles.profileMainSection}>
+              <View style={styles.profilePic}>
+                <View style={styles.profilePicPlaceholder}>
+                  <Text style={styles.profileInitials}>
+                    {profileData.lead_details.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
                   </Text>
                 </View>
-                <View style={[styles.profileDOB, { marginLeft: -70 }]}>
-                  <Icon 
-                    name="phone" 
-                    size={16} 
-                    color={colors.primary} 
-                    style={styles.topPhoneIcon}
-                  />
-                  <Text style={styles.profileDOBText}>
-                    {profileData.lead_details.phone_1 || 
-                     profileData.lead_details.phone_2 || 
-                     profileData.lead_details.telephone || '-'}
-                  </Text>
+              </View>
+              <View style={styles.profileDetails}>
+                <Text style={[styles.profileRow, styles.profileName]}>
+                  {profileData.lead_details.name}
+                </Text>
+                <Text style={[styles.profileRow, styles.profileEmail]}>
+                  {profileData.email}
+                </Text>
+                <View style={[styles.profileRow, styles.profileDOBContact]}>
+                  <View style={styles.profileDOB}>
+                    <Icon 
+                      name="calendar" 
+                      size={16} 
+                      color={colors.primary} 
+                      style={styles.topCalendarIcon}
+                    />
+                    <Text style={styles.profileDOBText}>
+                      {profileData.lead_details.date_of_birth || '-'}
+                    </Text>
+                  </View>
+                  <View style={[styles.profileDOB, { marginLeft: -70 }]}>
+                    <Icon 
+                      name="phone" 
+                      size={16} 
+                      color={colors.primary} 
+                      style={styles.topPhoneIcon}
+                    />
+                    <Text style={styles.profileDOBText}>
+                      {profileData.lead_details.phone_1 || 
+                       profileData.lead_details.phone_2 || 
+                       profileData.lead_details.telephone || '-'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -218,23 +222,24 @@ interface CourseProps {
 }
 
 const Course: React.FC<CourseProps> = ({ number, data }) => {
+  const { t } = useTranslation();
   const currentDate = new Date();
   const courseStartDate = new Date(data.start_date);
   const courseEndDate = new Date(data.end_date);
 
   let courseStatus: string;
   if (currentDate < courseStartDate) {
-    courseStatus = 'Upcoming';
+    courseStatus = t('mobile.profile.upcoming');
   } else if (currentDate > courseEndDate) {
-    courseStatus = 'Completed';
+    courseStatus = t('mobile.profile.completed');
   } else {
-    courseStatus = 'Ongoing';
+    courseStatus = t('mobile.profile.ongoing');
   }
 
   return (
     <View style={styles.courseContainer}>
       <View style={styles.courseFirstRow}>
-        <Text style={styles.courseNumber}>Course {number}</Text>
+        <Text style={styles.courseNumber}>{t('mobile.profile.course')} {number}</Text>
         <Text style={styles.courseStatus}>{courseStatus}</Text>
       </View>
       <Text style={styles.courseName}>{data.italian_name}</Text>
@@ -254,17 +259,18 @@ interface PackageProps {
 }
 
 const Package: React.FC<PackageProps> = ({ data, navigation }) => {
+  const { t } = useTranslation();
   const currentDate = new Date();
   const packageStartDate = new Date(data.courses_start_date);
   const packageEndDate = new Date(data.courses_end_date);
 
   let packageStatus: string;
   if (currentDate < packageStartDate) {
-    packageStatus = 'Upcoming';
+    packageStatus = t('mobile.profile.upcoming');
   } else if (currentDate > packageEndDate) {
-    packageStatus = 'Completed';
+    packageStatus = t('mobile.profile.completed');
   } else {
-    packageStatus = 'Ongoing';
+    packageStatus = t('mobile.profile.ongoing');
   }
 
   return (
@@ -288,7 +294,7 @@ const Package: React.FC<PackageProps> = ({ data, navigation }) => {
       </View>
       <View style={styles.packageFooter}>
         <Button
-          text="View Payment Details"
+          text={t('mobile.profile.view_payment_details')}
           onPress={() => {
             navigation.navigate('Payments', { data: {
               id: data.id,
@@ -337,8 +343,19 @@ const styles = StyleSheet.create({
     marginBottom: 66,
   },
   profileTopSection: {
-    flexDirection: 'row',
     top: 16,
+    paddingBottom: 10,
+  },
+  headerRightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  headerLanguageSelector: {
+    marginRight: 5,
+  },
+  profileMainSection: {
+    flexDirection: 'row',
     height: 80,
   },
   profilePic: {

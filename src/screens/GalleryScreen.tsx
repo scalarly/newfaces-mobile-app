@@ -9,12 +9,14 @@ import { Image } from '../components/Image';
 import { Header } from '../components/Header';
 import { Pressable } from '../components/Pressable';
 import { BottomNavigation } from '../components/BottomNavigation';
+import { useTranslation } from '../hooks/useTranslation';
 
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 48) / 2; // 2 columns with margins
 
 const GalleryScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   // Sample gallery data for demonstration
@@ -47,7 +49,7 @@ const GalleryScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header 
-        title="Gallery" 
+        title={t('mobile.titles.gallery')} 
         showNotification 
       />
       

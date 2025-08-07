@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { Header, BottomNavigation, Pressable, RefreshControl } from '../components';
 import { useCollection } from '../hooks/useCollection';
 import { useRefresh } from '../hooks/useRefresh';
+import { useTranslation } from '../hooks/useTranslation';
 import { useUserToken, useUserId } from '../hooks/useAsyncStorage';
 import { colors, spacing } from '../helpers/theme';
 import { formatDate } from '../helpers/dateUtils';
@@ -43,6 +44,7 @@ type NotificationType = 'email' | 'sms';
 type Props = NativeStackScreenProps<RootStackParamList, 'Notification'>;
 
 const NotificationScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { token: userToken } = useUserToken();
   const { userId } = useUserId();
   const [refreshing, onRefresh] = useRefresh();
@@ -186,7 +188,7 @@ const NotificationScreen: React.FC<Props> = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Custom Header */}
       <Header
-        title="Notifications"
+        title={t('mobile.titles.notification')}
         canGoBack
         onBackPress={handleBackPress}
         noShadow

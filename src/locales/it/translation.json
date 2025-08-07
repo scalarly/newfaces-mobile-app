@@ -1,0 +1,89 @@
+{
+  "general": {
+    "selectLanguage": "Seleziona Lingua",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "ok": "OK",
+    "yes": "Sì",
+    "no": "No",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "next": "Successivo",
+    "previous": "Precedente",
+    "loading": "Caricamento..",
+    "error": "Errore",
+    "success": "Successo",
+    "warning": "Avviso",
+    "info": "Informazione",
+    "copyright": "New Faces © 2018 Tutti i Diritti Riservati",
+    "title": "New Faces",
+    "tagline": "Per La Moda la TV e il cinema",
+    "loginPrompt": "Per favore utilizza le tue credenziali per effettuare il login"
+  },
+  "mobile": {
+    "titles": {
+      "calendar": "Calendario",
+      "notification": "Notifica",
+      "messages": "Messaggi",
+      "profile": "Profilo",
+      "payment_details": "Dettagli di pagamento",
+      "emi_details": "Dettagli EMI",
+      "gallery": "Galleria"
+    },
+    "login": {
+      "subtitle": "Per la moda, la TV e il cinema",
+      "forgotPassword": "Password dimenticata?",
+      "form": {
+        "email": "Email",
+        "password": "Password",
+        "continue": "Continua"
+      }
+    },
+    "messages": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "no_name": "Nessun nome"
+    },
+    "profile": {
+      "upcoming": "Prossimamente",
+      "ongoing": "In corso",
+      "completed": "Completato",
+      "course": "Corso",
+      "view_payment_details": "Visualizza i dettagli del pagamento"
+    },
+    "payment_details": {
+      "package": "Pacchetto",
+      "total_amount": "Importo totale",
+      "payment_type": "Tipo di pagamento",
+      "upfront_payment": "Pagamento anticipato",
+      "total_upfront": "Importo totale anticipato",
+      "total_upfront_paid": "Importo totale anticipato pagato",
+      "balance_upfront": "Saldo Importo anticipato",
+      "upfront_amount": "Importo anticipato",
+      "paid": "Pagato",
+      "overdue": "In ritardo",
+      "deadline": "Scadenza",
+      "emi_payment": "Pagamento EMI",
+      "view_emi": "Visualizza i dettagli EMI",
+      "residual_amount": "Importo residuo",
+      "emi_paid": "EMI pagato",
+      "balance_residual_amount": "Importo residuo del saldo"
+    },
+    "emi_details": {
+      "date": "Data di pagamento",
+      "amount": "Importo",
+      "type": "Tipo"
+    },
+    "gallery": {
+      "download_album": "Scaricare l'album"
+    },
+    "logout": {
+      "logout": "Logout",
+      "confirmation": "Sei sicuro di voler uscire?"
+    }
+  }
+}

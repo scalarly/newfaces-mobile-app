@@ -13,6 +13,7 @@ export { Calendar } from './Calendar';
 export { Header } from './Header';
 export { BottomNavigation } from './BottomNavigation';
 export { RefreshControl } from './RefreshControl';
+export { LanguageSelector } from './LanguageSelector';
 
 // Common Layout Patterns
 export { flexPatterns } from './common';

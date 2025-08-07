@@ -87,6 +87,17 @@ export const setLanguage = (language: 'en' | 'it') => {
 // Initialize with default language
 setLanguage(lang as 'en' | 'it');
 
+// Translation and i18n exports
+export { useTranslation } from '../hooks/useTranslation';
+export { 
+  SupportedLanguage, 
+  setLanguagePreference, 
+  getCurrentLanguage, 
+  getSupportedLanguages,
+  LANGUAGE_CONFIG,
+} from '../locales/i18n';
+export { default as i18n } from '../locales/i18n';
+
 // Legacy-compatible exports
 export {
   // Date utilities (moment replacement)
