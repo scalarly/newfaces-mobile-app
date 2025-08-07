@@ -11,6 +11,7 @@ export { useApi, useApiGet, useApiPost, useApiPut, useApiDelete } from './useApi
 export { useSecureStorage, useUserToken, useUserId, useMultipleSecureStorage } from './useAsyncStorage';
 export { useDebounce, useDebouncedCallback, useDebouncedSearch } from './useDebounce';
 export { useForm } from './useForm';
+export { useNotifications, useNotificationDebug } from './useNotifications';
 
 // Re-export types for convenience
 export type {
@@ -36,6 +37,11 @@ export type {
   UseFormReturn 
 } from './useForm';
 
+export type {
+  UseNotificationsReturn,
+  UseNotificationsOptions,
+} from './useNotifications';
+
 // Legacy-compatible exports (for easier migration)
 export { useLegacyCollection as originalUseCollection } from './useCollection';
 export { useSimpleRefresh as originalUseRefresh } from './useRefresh';
@@ -49,3 +55,4 @@ export { default as useApiDefault } from './useApi';
 export { default as useSecureStorageDefault } from './useAsyncStorage';
 export { default as useDebounceDefault } from './useDebounce';
 export { default as useFormDefault } from './useForm';
+export { default as useNotificationsDefault } from './useNotifications';

@@ -1,6 +1,5 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Screens
@@ -14,6 +13,7 @@ import {
   EMIScreen,
   SwitchUserScreen,
   LoaderScreen,
+  // NotificationDebugScreen, // Removed from UI but kept for future use
 } from '../screens';
 import TabNavigator from './TabNavigator';
 import { RootStackParamList } from './types';
@@ -26,7 +26,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // Main App Navigator
 const AppNavigator: React.FC = () => {
   return (
-    <NavigationContainer>
+    <>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <Stack.Navigator
         initialRouteName="Login"
@@ -119,8 +119,19 @@ const AppNavigator: React.FC = () => {
             presentation: 'modal',
           }}
         />
+        {/* NotificationDebug screen removed from navigation but kept for future use
+        <Stack.Screen
+          name="NotificationDebug"
+          component={NotificationDebugScreen}
+          options={{
+            title: 'Notification Debug',
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        */}
       </Stack.Navigator>
-    </NavigationContainer>
+    </>
   );
 };
 

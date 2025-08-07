@@ -82,4 +82,5 @@ export type RootStackParamList = {
     }>;
   };
   SwitchUser: undefined;
+  // NotificationDebug: undefined; // Removed from UI but kept for future use
 };

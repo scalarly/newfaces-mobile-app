@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NavigationContainer } from '@react-navigation/native';
 
 import AppNavigator from './navigation/AppNavigator';
+import { notificationService } from './services/NotificationService';
+import { useNotifications } from './hooks/useNotifications';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -28,12 +31,50 @@ const theme = {
 };
 
 /**
+ * Notification-aware app wrapper component
+ */
+const AppWithNotifications: React.FC = () => {
+  const navigationRef = useRef<any>(null);
+
+  // Initialize notifications with navigation reference
+  const { token, isEnabled, isLoading, error } = useNotifications({
+    autoInitialize: true,
+    navigationRef,
+  });
+
+  useEffect(() => {
+    // Set navigation reference for notification service
+    if (navigationRef.current) {
+      notificationService.setNavigationRef(navigationRef);
+    }
+  }, []);
+
+  // Log notification status for debugging
+  useEffect(() => {
+    if (!isLoading) {
+      console.log('🔔 Notification Status:', {
+        token: token ? `${token.substring(0, 20)}...` : null,
+        isEnabled,
+        error,
+      });
+    }
+  }, [token, isEnabled, isLoading, error]);
+
+  return (
+    <NavigationContainer ref={navigationRef}>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+};
+
+/**
  * Main App Component
  * 
  * This is the root component that sets up:
  * - React Native Paper theme provider
  * - Safe area provider for proper spacing
  * - React Query client for API state management
+ * - Push notification service
  * - Navigation container
  */
 const App: React.FC = () => {
@@ -41,7 +82,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
-          <AppNavigator />
+          <AppWithNotifications />
         </PaperProvider>
       </SafeAreaProvider>
     </QueryClientProvider>

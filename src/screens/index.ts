@@ -25,3 +25,6 @@ export { default as EMIScreen } from './EMIScreen';
 // Utility Screens
 export { default as LoaderScreen } from './LoaderScreen';
 export { default as SwitchUserScreen } from './SwitchUserScreen';
+
+// Debug Screens (development only)
+export { default as NotificationDebugScreen } from './NotificationDebugScreen';

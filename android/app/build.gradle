@@ -93,6 +93,15 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    // Fix for duplicate classes between AndroidX and support library
+    configurations.all {
+        exclude group: 'com.android.support', module: 'support-compat'
+        exclude group: 'com.android.support', module: 'support-core-utils'
+        exclude group: 'com.android.support', module: 'support-core-ui'
+        exclude group: 'com.android.support', module: 'support-fragment'
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -124,4 +133,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // Force AndroidX dependencies to resolve conflicts
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.fragment:fragment:1.8.5'
 }

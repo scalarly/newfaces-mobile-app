@@ -5,6 +5,7 @@ import {
   ScrollView,
   Alert,
   TouchableWithoutFeedback,
+  Text as RNText,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -107,12 +108,27 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  // Notification debug functionality removed from UI but kept for future use
+  // const handleNotificationDebug = () => {
+  //   navigation.navigate('NotificationDebug');
+  // };
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
         title="Profile"
         noShadow
         showNotification
+        // Debug button removed from UI
+        // rightComponent={
+        //   __DEV__ ? (
+        //     <TouchableWithoutFeedback onPress={handleNotificationDebug}>
+        //       <View style={styles.debugButton}>
+        //         <RNText style={styles.debugButtonText}>🔔 Debug</RNText>
+        //       </View>
+        //     </TouchableWithoutFeedback>
+        //   ) : undefined
+        // }
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -481,6 +497,17 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     paddingTop: 4,
     paddingBottom: 4,
+  },
+  debugButton: {
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 
