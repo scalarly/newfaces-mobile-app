@@ -1,99 +1,73 @@
 /**
- * EnhancedGalleryScreen - Modern gallery with all requested features
- * - Multi-selection and batch operations
- * - PDF export functionality
- * - File download with progress tracking
- * - Authenticated image requests
- * - Linear gradient support
+ * EnhancedGalleryScreen - Simplified to show only album link
+ * 
+ * This screen now shows only the album download link as a styled button.
+ * All other gallery functionality is commented out for future use.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, FlatList, Dimensions, Alert, Platform } from 'react-native';
+import { StyleSheet, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Import our enhanced components
 import { View, Container } from '../../../components/Layout';
 import { Text } from '../../../components/Typography';
-import { Image } from '../../../components/Image';
 import { Pressable } from '../../../components/Pressable';
 import { Header } from '../../../components/Header';
 import { BottomNavigation } from '../../../components/BottomNavigation';
 import { useTranslation } from '../../../hooks/useTranslation';
-import { useToggle } from '../../../hooks/useToggle';
 
-// Gallery feature components
-import { GalleryItem } from '../components/GalleryItem';
-import { GallerySelectionBar } from '../components/GallerySelectionBar';
-import { GalleryHeader } from '../components/GalleryHeader';
-import { GradientView, gradientPresets } from '../components/GradientView';
+// Gallery feature components - COMMENTED OUT FOR FUTURE USE
+// import { GalleryItem } from '../components/GalleryItem';
+// import { GallerySelectionBar } from '../components/GallerySelectionBar';
+// import { GalleryHeader } from '../components/GalleryHeader';
+import { GradientView } from '../components/GradientView';
 
 // Services
 import { galleryService } from '../services/GalleryService';
-import { permissionsService } from '../services/PermissionsService';
 
 // Types
-import { GalleryImage, DownloadProgress } from '../types';
+import { GalleryImage } from '../types';
 
 import { colors, spacing } from '../../../helpers/theme';
 import Icon from 'react-native-vector-icons/Feather';
 
 const { width } = Dimensions.get('window');
-const itemSpacing = spacing.md;
-const itemsPerRow = 2;
-const itemWidth = (width - itemSpacing * 3) / itemsPerRow;
 
 export const EnhancedGalleryScreen: React.FC = () => {
   const { t } = useTranslation();
   
-  // State management
-  const [images, setImages] = useState<GalleryImage[]>([]);
+  // State management - SIMPLIFIED FOR ALBUM LINK ONLY
+  const [images, setImages] = useState<GalleryImage[]>([]); // Keep for future use
+  const [albumLink, setAlbumLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  
-  // Selection state
-  const [isSelectionMode, toggleSelectionMode] = useToggle(false);
-  const [selectedCount, setSelectedCount] = useState(0);
-  
-  // Operation states
-  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isDownloadingAlbum, setIsDownloadingAlbum] = useState(false);
 
-  // Selected image for full screen view
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  // COMMENTED OUT FOR FUTURE USE - Selection and other states
+  // const [refreshing, setRefreshing] = useState(false);
+  // const [isSelectionMode, toggleSelectionMode] = useToggle(false);
+  // const [selectedCount, setSelectedCount] = useState(0);
+  // const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
+  // const [isDownloading, setIsDownloading] = useState(false);
+  // const [isExportingPDF, setIsExportingPDF] = useState(false);
+  // const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
-  // Initialize gallery service listeners
+  // Initialize gallery service listeners - SIMPLIFIED FOR ALBUM LINK ONLY
   useEffect(() => {
     galleryService.setEventListeners({
-      onDownloadProgress: (progress) => {
-        setDownloadProgress(progress);
-      },
       onDownloadComplete: (result) => {
-        setIsDownloading(false);
-        setIsExportingPDF(false);
         setIsDownloadingAlbum(false);
-        setDownloadProgress(null);
         
         if (result.success) {
-          Alert.alert(
-            'Success',
-            `File saved successfully${result.filePath ? `\nLocation: ${result.filePath}` : ''}`,
-            [{ text: 'OK' }]
-          );
+          // No need to show success alert for opening external links
+          console.log('✅ Album link opened successfully');
         } else {
           Alert.alert(
             'Error',
-            result.error || 'Operation failed',
+            result.error || 'Failed to open album link',
             [{ text: 'OK' }]
           );
-        }
-      },
-      onSelectionChange: (count) => {
-        setSelectedCount(count);
-        if (count === 0 && isSelectionMode) {
-          toggleSelectionMode();
         }
       },
     });
@@ -101,18 +75,25 @@ export const EnhancedGalleryScreen: React.FC = () => {
     return () => {
       galleryService.cleanup();
     };
-  }, [isSelectionMode, toggleSelectionMode]);
+  }, []);
 
-  // Load gallery data
+  // Load gallery data - SIMPLIFIED FOR ALBUM LINK ONLY
   const loadGalleryData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const galleryData = await galleryService.fetchGalleryData();
-      setImages(galleryData);
+      setImages(galleryData.images); // Keep for future use
+      setAlbumLink(galleryData.albumLink);
+      
+      console.log('📸 Gallery loaded:', {
+        imageCount: galleryData.images.length,
+        hasAlbumLink: !!galleryData.albumLink,
+        albumLink: galleryData.albumLink ? 'Available' : 'Not available'
+      });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load gallery';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load gallery data';
       setError(errorMessage);
       console.error('Gallery load error:', err);
     } finally {
@@ -120,147 +101,21 @@ export const EnhancedGalleryScreen: React.FC = () => {
     }
   }, []);
 
-  // Refresh gallery data
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadGalleryData();
-    setRefreshing(false);
-  }, [loadGalleryData]);
-
   // Load data on mount
   useEffect(() => {
     loadGalleryData();
   }, [loadGalleryData]);
 
-  // Handle image press
-  const handleImagePress = useCallback((image: GalleryImage) => {
-    if (isSelectionMode) {
-      galleryService.toggleImageSelection(image.id);
-    } else {
-      setSelectedImage(image);
-    }
-  }, [isSelectionMode]);
-
-  // Handle image long press (start selection mode)
-  const handleImageLongPress = useCallback((image: GalleryImage) => {
-    if (!isSelectionMode) {
-      toggleSelectionMode();
-      galleryService.toggleImageSelection(image.id);
-    }
-  }, [isSelectionMode, toggleSelectionMode]);
-
-  // Selection operations
-  const handleSelectAll = useCallback(() => {
-    galleryService.selectAllImages(images);
-  }, [images]);
-
-  const handleClearSelection = useCallback(() => {
-    galleryService.clearSelection();
-  }, []);
-
-  const isAllSelected = selectedCount === images.length && images.length > 0;
-
-  // Download operations
-  const handleDownloadSelected = useCallback(async () => {
-    try {
-      setIsDownloading(true);
-      
-      const hasPermissions = await permissionsService.hasRequiredPermissions();
-      if (!hasPermissions) {
-        const granted = await permissionsService.showPermissionRationale();
-        if (!granted) {
-          setIsDownloading(false);
-          return;
-        }
-      }
-
-      await galleryService.downloadSelectedImages(images, (progress) => {
-        // Overall progress is handled by the service event listener
-      });
-      
-      // Clear selection after successful download
-      galleryService.clearSelection();
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  }, [images]);
-
-  // PDF export
-  const handleExportPDF = useCallback(async () => {
-    try {
-      setIsExportingPDF(true);
-      
-      const hasPermissions = await permissionsService.hasRequiredPermissions();
-      if (!hasPermissions) {
-        const granted = await permissionsService.showPermissionRationale();
-        if (!granted) {
-          setIsExportingPDF(false);
-          return;
-        }
-      }
-
-      await galleryService.exportSelectedImagesToPDF(images, {
-        title: 'Gallery Export',
-        orientation: 'portrait',
-        format: 'A4',
-      });
-      
-      // Clear selection after successful export
-      galleryService.clearSelection();
-    } catch (error) {
-      console.error('PDF export failed:', error);
-    }
-  }, [images]);
-
-  // Album download
-  const handleAlbumDownload = useCallback(async () => {
+  // Open album link - ONLY FUNCTIONALITY ACTIVE
+  const handleOpenAlbum = useCallback(async () => {
     try {
       setIsDownloadingAlbum(true);
-      
-      const hasPermissions = await permissionsService.hasRequiredPermissions();
-      if (!hasPermissions) {
-        const granted = await permissionsService.showPermissionRationale();
-        if (!granted) {
-          setIsDownloadingAlbum(false);
-          return;
-        }
-      }
-
-      await galleryService.downloadAlbum();
+      await galleryService.openAlbumLink(albumLink);
     } catch (error) {
-      console.error('Album download failed:', error);
+      console.error('Failed to open album:', error);
+      setIsDownloadingAlbum(false);
     }
-  }, []);
-
-  // Render gallery item
-  const renderGalleryItem = useCallback(({ item, index }: { item: GalleryImage; index: number }) => {
-    const isSelected = galleryService.isImageSelected(item.id);
-    
-    return (
-      <GalleryItem
-        item={item}
-        isSelected={isSelected}
-        isSelectionMode={isSelectionMode}
-        onPress={handleImagePress}
-        onLongPress={handleImageLongPress}
-        itemWidth={itemWidth}
-        style={{
-          marginLeft: index % itemsPerRow === 0 ? 0 : itemSpacing,
-        }}
-      />
-    );
-  }, [isSelectionMode, handleImagePress, handleImageLongPress]);
-
-  // Render empty state
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-              <Icon name="image" size={64} color={colors.grey400} />
-        <Text style={styles.emptyTitle}>No Images Found</Text>
-        <Text style={styles.emptyDescription}>
-          Your gallery is empty. Images will appear here once they're uploaded.
-        </Text>
-    </View>
-  );
+  }, [albumLink]);
 
   // Render loading state
   if (loading) {
@@ -268,9 +123,9 @@ export const EnhancedGalleryScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <Header title={t('mobile.titles.gallery')} showNotification />
         <Container style={styles.content}>
-          <View style={styles.loadingContainer}>
+          <View style={styles.centerContainer}>
             <Icon name="loader" size={48} color={colors.primary} />
-            <Text style={styles.loadingText}>Loading gallery...</Text>
+            <Text style={styles.loadingText}>{t('mobile.gallery.loadingImages')}</Text>
           </View>
         </Container>
         <BottomNavigation />
@@ -284,12 +139,12 @@ export const EnhancedGalleryScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <Header title={t('mobile.titles.gallery')} showNotification />
         <Container style={styles.content}>
-          <View style={styles.errorContainer}>
+          <View style={styles.centerContainer}>
             <Icon name="alert-circle" size={48} color={colors.error} />
-            <Text style={styles.errorTitle}>Failed to Load Gallery</Text>
-            <Text style={styles.errorDescription}>Note: Feature is under development</Text>
+            <Text style={styles.errorTitle}>{t('mobile.gallery.albumError')}</Text>
+            <Text style={styles.errorDescription}>{error}</Text>
             <Pressable style={styles.retryButton} onPress={loadGalleryData}>
-              <Text style={styles.retryButtonText}>Try Again</Text>
+              <Text style={styles.retryButtonText}>{t('general.tryAgain')}</Text>
             </Pressable>
           </View>
         </Container>
@@ -298,6 +153,7 @@ export const EnhancedGalleryScreen: React.FC = () => {
     );
   }
 
+  // Render main screen with album link only
   return (
     <SafeAreaView style={styles.container}>
       {/* Background gradient */}
@@ -307,100 +163,77 @@ export const EnhancedGalleryScreen: React.FC = () => {
       />
       
       <Header 
-        title={isSelectionMode ? `${selectedCount} Selected` : t('mobile.titles.gallery')} 
-        showNotification={!isSelectionMode}
-        canGoBack={isSelectionMode}
-        onBackPress={isSelectionMode ? handleClearSelection : undefined}
+        title={t('mobile.titles.gallery')} 
+        showNotification 
       />
       
       <Container style={styles.content}>
-        {/* Gallery header with album download */}
-        <GalleryHeader
-          title="Photo Gallery"
-          subtitle={`${images.length} image${images.length !== 1 ? 's' : ''}`}
-          showAlbumDownload={!isSelectionMode && images.length > 0}
-          onAlbumDownload={handleAlbumDownload}
-          isLoading={isDownloadingAlbum}
-        />
+        <View style={styles.centerContainer}>
+          {/* Gallery Icon */}
+          <View style={styles.iconContainer}>
+            <Icon name="image" size={64} color={colors.primary} />
+          </View>
 
-        {/* Gallery grid */}
-        <FlatList
-          data={images}
-          renderItem={renderGalleryItem}
-          keyExtractor={(item) => item.id}
-          numColumns={itemsPerRow}
-          columnWrapperStyle={itemsPerRow > 1 ? styles.row : undefined}
-          contentContainerStyle={[
-            styles.flatListContent,
-            images.length === 0 && styles.emptyListContent,
-          ]}
-          showsVerticalScrollIndicator={false}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-          ListEmptyComponent={renderEmptyState}
-        />
+          {/* Title */}
+          <Text style={styles.title}>Photo Gallery</Text>
+          
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>
+            {images.length > 0 
+              ? `${images.length} image${images.length !== 1 ? 's' : ''} available`
+              : 'Your photo collection'
+            }
+          </Text>
 
-        {/* Progress overlay */}
-        {downloadProgress && (
-          <View style={styles.progressOverlay}>
-            <GradientView
-              colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.6)']}
-              style={styles.progressBackground}
-            />
-            <View style={styles.progressContent}>
-              <Text style={styles.progressTitle}>
-                {downloadProgress.status === 'downloading' ? 'Downloading...' : 'Processing...'}
-              </Text>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill, 
-                    { width: `${downloadProgress.progress}%` }
-                  ]} 
+          {/* Open Album Button */}
+          {albumLink ? (
+            <Pressable
+              style={[styles.albumButton, isDownloadingAlbum && styles.albumButtonDisabled]}
+              onPress={handleOpenAlbum}
+              disabled={isDownloadingAlbum}
+            >
+              <GradientView
+                colors={isDownloadingAlbum ? ['#9CA3AF', '#6B7280'] : ['#0052CD', '#003A8C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.albumButtonGradient}
+              />
+              
+              <View style={styles.albumButtonContent}>
+                <View style={styles.albumButtonTextContainer}>
+                  <Text style={styles.albumButtonTitle}>
+                    {isDownloadingAlbum ? t('mobile.gallery.downloadingAlbum') : t('mobile.gallery.openAlbum')}
+                  </Text>
+                  <Text style={styles.albumButtonSubtitle}>
+                    {t('mobile.gallery.viewInDrive')}
+                  </Text>
+                </View>
+                
+                <Icon 
+                  name={isDownloadingAlbum ? "loader" : "chevron-right"} 
+                  size={24} 
+                  color="#FFFFFF" 
+                  style={styles.albumButtonIcon}
                 />
               </View>
-              <Text style={styles.progressText}>
-                {Math.round(downloadProgress.progress)}%
-              </Text>
+            </Pressable>
+          ) : (
+            <View style={styles.noAlbumContainer}>
+              <Icon name="folder-x" size={32} color={colors.grey400} />
+              <Text style={styles.noAlbumText}>{t('mobile.gallery.noAlbum')}</Text>
             </View>
-          </View>
-        )}
+          )}
+
+          {/* Info text */}
+          {albumLink && (
+            <Text style={styles.infoText}>
+              {t('mobile.gallery.viewInDrive')}
+            </Text>
+          )}
+        </View>
       </Container>
 
-      {/* Selection bar */}
-      {isSelectionMode && (
-        <GallerySelectionBar
-          selectedCount={selectedCount}
-          totalCount={images.length}
-          isAllSelected={isAllSelected}
-          onSelectAll={handleSelectAll}
-          onClearSelection={handleClearSelection}
-          onDownloadSelected={handleDownloadSelected}
-          onExportPDF={handleExportPDF}
-          isLoading={isDownloading || isExportingPDF}
-        />
-      )}
-
-      {/* Full screen image viewer */}
-      {selectedImage && (
-        <Pressable 
-          style={styles.fullScreenOverlay}
-          onPress={() => setSelectedImage(null)}
-        >
-          <GradientView
-            colors={['rgba(0,0,0,0.9)', 'rgba(0,0,0,0.7)']}
-            style={StyleSheet.absoluteFillObject}
-          />
-          <Image
-            src={selectedImage.url || selectedImage.path}
-            style={styles.fullScreenImage}
-            showLoading
-          />
-        </Pressable>
-      )}
-
-      {/* Bottom Navigation */}
-      {!isSelectionMode && <BottomNavigation />}
+      <BottomNavigation />
     </SafeAreaView>
   );
 };
@@ -413,37 +246,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 66, // Account for bottom navigation
   },
-  flatListContent: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  emptyListContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  row: {
-    justifyContent: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  
-  // Loading state
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: 16,
-    color: colors.grey600,
-  },
-  
-  // Error state
-  errorContainer: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
+  },
+  
+  // Loading and error states
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 16,
+    color: colors.grey600,
   },
   errorTitle: {
     fontSize: 18,
@@ -469,91 +283,157 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  
-  // Empty state
-  emptyContainer: {
-    flex: 1,
+
+  // Main content styles
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xl,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.grey700,
-    marginTop: spacing.md,
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.grey900,
     marginBottom: spacing.sm,
+    textAlign: 'center',
   },
-  emptyDescription: {
+  subtitle: {
+    fontSize: 16,
+    color: colors.grey600,
+    textAlign: 'center',
+    marginBottom: spacing.xxl,
+  },
+
+  // Album button styles
+  albumButton: {
+    width: width - (spacing.xl * 2),
+    height: 60,
+    borderRadius: 12,
+    marginBottom: spacing.lg,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  albumButtonDisabled: {
+    opacity: 0.7,
+  },
+  albumButtonGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  albumButtonContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+  },
+  albumButtonTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  albumButtonTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  albumButtonSubtitle: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    opacity: 0.8,
+    textAlign: 'center',
+  },
+  albumButtonIcon: {
+    position: 'absolute',
+    right: spacing.md,
+  },
+
+  // No album state
+  noAlbumContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: 12,
+    backgroundColor: colors.grey100,
+  },
+  noAlbumText: {
+    fontSize: 16,
+    color: colors.grey500,
+    marginTop: spacing.sm,
+  },
+
+  // Info text
+  infoText: {
     fontSize: 14,
     color: colors.grey500,
     textAlign: 'center',
     lineHeight: 20,
   },
-  
-  // Progress overlay
-  progressOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  progressContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: spacing.lg,
-    minWidth: 200,
-    alignItems: 'center',
-  },
-  progressTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.md,
-  },
-  progressBar: {
-    width: 160,
-    height: 4,
-    backgroundColor: colors.grey200,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-  },
-  progressText: {
-    fontSize: 14,
-    marginTop: spacing.sm,
-    color: colors.grey600,
-  },
-  
-  // Full screen image
-  fullScreenOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  fullScreenImage: {
-    width: width - 40,
-    height: (width - 40) * 0.75,
-    maxHeight: '80%',
-    borderRadius: 8,
-  },
 });
+
+// COMMENTED OUT FOR FUTURE USE - All the complex gallery functionality
+/*
+  // Multi-selection functionality
+  const [isSelectionMode, toggleSelectionMode] = useToggle(false);
+  const [selectedCount, setSelectedCount] = useState(0);
+  
+  // Download and PDF export functionality
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  
+  // Full screen image view
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  
+  // Image grid rendering
+  const renderGalleryItem = useCallback(({ item, index }: { item: GalleryImage; index: number }) => {
+    const isSelected = galleryService.isImageSelected(item.id);
+    
+    return (
+      <GalleryItem
+        item={item}
+        isSelected={isSelected}
+        isSelectionMode={isSelectionMode}
+        onPress={handleImagePress}
+        onLongPress={handleImageLongPress}
+        itemWidth={itemWidth}
+        style={{
+          marginLeft: index % itemsPerRow === 0 ? 0 : itemSpacing,
+        }}
+      />
+    );
+  }, [isSelectionMode, handleImagePress, handleImageLongPress]);
+  
+  // Selection operations
+  const handleSelectAll = useCallback(() => {
+    galleryService.selectAllImages(images);
+  }, [images]);
+
+  const handleClearSelection = useCallback(() => {
+    galleryService.clearSelection();
+  }, []);
+  
+  // Download and export operations
+  const handleDownloadSelected = useCallback(async () => {
+    // Implementation for downloading selected images
+  }, []);
+
+  const handleExportPDF = useCallback(async () => {
+    // Implementation for PDF export
+  }, []);
+*/
 
 export default EnhancedGalleryScreen;

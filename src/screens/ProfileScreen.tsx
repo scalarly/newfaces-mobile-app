@@ -294,7 +294,7 @@ const Package: React.FC<PackageProps> = ({ data, navigation }) => {
       </View>
       <View style={styles.packageFooter}>
         <Button
-          text={t('mobile.profile.view_payment_details')}
+          text={t('mobile.profile.viewPaymentDetails')}
           onPress={() => {
             navigation.navigate('Payments', { data: {
               id: data.id,

@@ -1,4 +1,4 @@
-// No longer using react-native-push-notification to avoid Firebase dependencies
+// Using React Native Firebase for FCM push notifications
 import notifee, { 
   AndroidImportance, 
   AndroidStyle, 
@@ -8,10 +8,11 @@ import notifee, {
   Event as NotifeeEvent,
   Notification,
   AndroidChannel,
-  AuthorizationStatus,
+  AuthorizationStatus as NotifeeAuthorizationStatus,
   TriggerType,
   TimestampTrigger
 } from '@notifee/react-native';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { Platform, Alert, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService } from '../helpers/request';
@@ -62,6 +63,11 @@ export class NotificationService {
   private pushToken: string | null = null;
   private isInitialized = false;
   private navigationRef: any = null;
+  private eventListeners: {
+    onTokenRefresh?: () => void;
+    onMessage?: () => void;
+    onNotificationOpenedApp?: () => void;
+  } = {};
 
   private constructor() {
     this.initialize();
@@ -99,11 +105,17 @@ export class NotificationService {
       // Create notification channels (Android)
       await this.createNotificationChannels();
 
-          // Configure local notifications only (no push notifications)
-    await this.configureLocalNotifications();
+      // Configure Firebase messaging
+      await this.configureFirebaseMessaging();
+
+      // Generate and store FCM token
+      await this.generateFCMToken();
 
       // Set up notification interaction handlers
       this.setupNotificationInteractionHandlers();
+
+      // Set up Firebase message handlers
+      this.setupFirebaseMessageHandlers();
 
       // Handle app state changes
       this.setupAppStateHandlers();
@@ -125,10 +137,10 @@ export class NotificationService {
       const settings = await notifee.requestPermission();
       console.log('🔐 Notification permission settings:', settings);
       
-      if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
+      if (settings.authorizationStatus === NotifeeAuthorizationStatus.AUTHORIZED) {
         console.log('✅ Notification permissions granted');
         return true;
-      } else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
+      } else if (settings.authorizationStatus === NotifeeAuthorizationStatus.DENIED) {
         console.log('❌ Notification permissions denied');
         return false;
       } else {
@@ -207,33 +219,54 @@ export class NotificationService {
   }
 
   /**
-   * Configure push notifications
+   * Configure Firebase messaging
    */
-  private async configureLocalNotifications(): Promise<void> {
+  private async configureFirebaseMessaging(): Promise<void> {
     try {
-      // Generate a local identifier for this device
-      await this.generateLocalToken();
-      
-      console.log('✅ Local notification system configured');
+      // Request permission for iOS
+      if (Platform.OS === 'ios') {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (!enabled) {
+          console.log('❌ Firebase messaging permission not granted');
+          return;
+        }
+      }
+
+      console.log('✅ Firebase messaging configured');
     } catch (error) {
-      console.error('❌ Error configuring local notifications:', error);
+      console.error('❌ Error configuring Firebase messaging:', error);
     }
   }
 
   /**
-   * Generate a local token for development/testing purposes
+   * Generate and store FCM token
    */
-  private async generateLocalToken(): Promise<void> {
+  private async generateFCMToken(): Promise<void> {
     try {
-      // Generate a UUID-based token for local testing
-      const localToken = `local_${Platform.OS}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      console.log('🔧 Generated local token for testing:', localToken);
+      // Get the FCM token
+      const fcmToken = await messaging().getToken();
+      console.log('🔧 Generated FCM token:', fcmToken);
       
-      this.pushToken = localToken;
-      await this.storePushToken(localToken);
-      await this.syncTokenWithBackend(localToken);
+      this.pushToken = fcmToken;
+      await this.storePushToken(fcmToken);
+      await this.syncTokenWithBackend(fcmToken);
+
+      // Listen for token refresh
+      const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (token) => {
+        console.log('🔄 FCM token refreshed:', token);
+        this.pushToken = token;
+        await this.storePushToken(token);
+        await this.syncTokenWithBackend(token);
+      });
+      
+      // Store the unsubscribe function for cleanup
+      this.eventListeners.onTokenRefresh = unsubscribeTokenRefresh;
     } catch (error) {
-      console.error('❌ Error generating local token:', error);
+      console.error('❌ Error generating FCM token:', error);
     }
   }
 
@@ -324,6 +357,60 @@ export class NotificationService {
     notifee.onBackgroundEvent(async ({ type, detail }: NotifeeEvent) => {
       await this.handleNotifeeEvent(type, detail);
     });
+  }
+
+  /**
+   * Set up Firebase message handlers
+   */
+  private setupFirebaseMessageHandlers(): void {
+    // Handle messages when app is in foreground
+    const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
+      console.log('📱 Received foreground message:', remoteMessage);
+      
+      if (remoteMessage.notification) {
+        await this.displayLocalNotification({
+          title: remoteMessage.notification.title || 'New Notification',
+          body: remoteMessage.notification.body || '',
+          data: remoteMessage.data,
+          type: remoteMessage.data?.type as NotificationType,
+          imageUrl: remoteMessage.notification.android?.imageUrl,
+        });
+      }
+    });
+
+    // Handle notification opened app from background/quit state
+    const unsubscribeOnNotificationOpenedApp = messaging().onNotificationOpenedApp((remoteMessage) => {
+      console.log('📱 Notification opened app from background:', remoteMessage);
+      
+      if (remoteMessage.data) {
+        this.navigateBasedOnType(
+          remoteMessage.data.type as NotificationType, 
+          remoteMessage.data
+        );
+      }
+    });
+
+    // Handle notification opened app from quit state
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage) => {
+        if (remoteMessage) {
+          console.log('📱 Notification opened app from quit state:', remoteMessage);
+          
+          if (remoteMessage.data) {
+            this.navigateBasedOnType(
+              remoteMessage.data.type as NotificationType, 
+              remoteMessage.data
+            );
+          }
+        }
+      });
+      
+    // Store the unsubscribe functions for cleanup
+    this.eventListeners.onMessage = unsubscribeOnMessage;
+    this.eventListeners.onNotificationOpenedApp = unsubscribeOnNotificationOpenedApp;
+
+    // Background message handler is registered at the top level in App.tsx
   }
 
   /**
@@ -471,7 +558,16 @@ export class NotificationService {
   async getToken(): Promise<string | null> {
     if (!this.pushToken) {
       try {
+        // Try to get stored token first
         this.pushToken = await AsyncStorage.getItem('pushToken');
+        
+        // If no stored token, generate new FCM token
+        if (!this.pushToken) {
+          this.pushToken = await messaging().getToken();
+          if (this.pushToken) {
+            await this.storePushToken(this.pushToken);
+          }
+        }
       } catch (error) {
         console.error('❌ Error getting push token:', error);
         return null;
@@ -489,11 +585,11 @@ export class NotificationService {
         // Check notification settings using Notifee
         const settings = await notifee.getNotificationSettings();
         console.log('🔍 Android notification settings:', settings);
-        return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED;
+        return settings.authorizationStatus === NotifeeAuthorizationStatus.AUTHORIZED;
       } else {
         // For iOS, check using Notifee as well
         const settings = await notifee.getNotificationSettings();
-        return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED;
+        return settings.authorizationStatus === NotifeeAuthorizationStatus.AUTHORIZED;
       }
     } catch (error) {
       console.error('❌ Error checking notification permissions:', error);
@@ -689,6 +785,25 @@ export class NotificationService {
       };
     } catch (error) {
       console.error('❌ Error getting notification settings:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Refresh FCM token
+   */
+  async refreshToken(): Promise<string | null> {
+    try {
+      const newToken = await messaging().getToken();
+      if (newToken) {
+        this.pushToken = newToken;
+        await this.storePushToken(newToken);
+        await this.syncTokenWithBackend(newToken);
+        console.log('🔄 FCM token refreshed successfully');
+      }
+      return newToken;
+    } catch (error) {
+      console.error('❌ Error refreshing FCM token:', error);
       return null;
     }
   }

@@ -7,9 +7,22 @@ import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './navigation/AppNavigator';
 import { notificationService } from './services/NotificationService';
 import { useNotifications } from './hooks/useNotifications';
+import messaging from '@react-native-firebase/messaging';
 
 // Initialize i18n
 import './locales/i18n';
+
+// Suppress Firebase deprecation warnings during transition period
+// TODO: Remove this once React Native Firebase fully implements modular API
+(globalThis as any).RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
+
+// Register background message handler at the top level
+// This must be done outside of any component or class
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+  console.log('📱 Received background message:', remoteMessage);
+  // Background messages are automatically displayed by the system
+  // We can perform data processing here if needed
+});
 
 // Create a client for React Query
 const queryClient = new QueryClient({

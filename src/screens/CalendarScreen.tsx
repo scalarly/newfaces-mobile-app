@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +9,23 @@ import { Calendar } from '../components/Calendar';
 import { Header } from '../components/Header';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTranslation } from '../hooks/useTranslation';
+import { useCollection } from '../hooks/useCollection';
+import { formatDate } from '../helpers/dateUtils';
 
+
+// Type definitions matching the API response structure
+interface AppointmentData {
+  id: number;
+  title?: string;
+  happening_at: string;
+  description?: string;
+  status?: string;
+  location?: string;
+  user_details?: {
+    first_name: string;
+    last_name?: string;
+  };
+}
 
 interface CalendarEvent {
   id: string;
@@ -22,27 +38,45 @@ const CalendarScreen: React.FC = () => {
   const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   
-  // Sample events for demonstration
-  const sampleEvents: CalendarEvent[] = [
-    {
-      id: '1',
-      title: 'Team Meeting',
-      date: '2025-01-15',
-      color: '#0052CD',
-    },
-    {
-      id: '2',
-      title: 'Client Call',
-      date: '2025-01-15',
-      color: '#ff6b6b',
-    },
-    {
-      id: '3',
-      title: 'Project Review',
-      date: '2025-01-20',
-      color: '#51cf66',
-    },
-  ];
+  // Fetch appointments from API (exactly like legacy app)
+  const { collection } = useCollection<AppointmentData>('me/appointments');
+  
+  // Process appointment data into calendar events (matching legacy logic)
+  const appointmentEvents: CalendarEvent[] = useMemo(() => {
+    if (!collection.items || collection.items.length === 0) {
+      console.log('No appointments loaded yet or empty appointments');
+      return [];
+    }
+
+    return collection.items.map((appointment) => {
+      // Extract title from appointment data
+      let title = appointment.title || 'Appointment';
+      
+      // If no title, try to create one from user details (like legacy)
+      if (!appointment.title && appointment.user_details) {
+        const userName = appointment.user_details.first_name + 
+          (appointment.user_details.last_name ? ` ${appointment.user_details.last_name}` : '');
+        title = `Meeting with ${userName}`;
+      }
+
+      // Determine color based on status or use default
+      let color = '#0052CD'; // Default blue
+      if (appointment.status === 'confirmed') {
+        color = '#51cf66'; // Green for confirmed
+      } else if (appointment.status === 'cancelled') {
+        color = '#ff6b6b'; // Red for cancelled
+      } else if (appointment.status === 'pending') {
+        color = '#ffd43b'; // Yellow for pending
+      }
+
+      return {
+        id: appointment.id.toString(),
+        title,
+        date: appointment.happening_at, // API provides ISO date string
+        color,
+      };
+    });
+  }, [collection.items]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -50,7 +84,8 @@ const CalendarScreen: React.FC = () => {
 
   const handleEventPress = (event: CalendarEvent, date: Date) => {
     console.log('Event pressed:', event.title, 'on', date);
-    // TODO: Navigate to event details or show event popup
+    // TODO: Implement event popup like legacy app
+    // Legacy had EventsPopup component that showed appointment details
   };
 
   return (
@@ -65,10 +100,24 @@ const CalendarScreen: React.FC = () => {
           <Calendar
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
-            events={sampleEvents}
+            events={appointmentEvents}
             onEventPress={handleEventPress}
           />
         </View>
+        
+        {/* Loading indicator */}
+        {!collection.loaded && (
+          <View style={styles.loadingContainer}>
+            <Text>Loading appointments...</Text>
+          </View>
+        )}
+        
+        {/* No appointments message */}
+        {collection.loaded && appointmentEvents.length === 0 && (
+          <View style={styles.noAppointmentsContainer}>
+            <Text>No appointments found.</Text>
+          </View>
+        )}
         
         {selectedDate && (
           <View style={styles.selectedDateInfo}>
@@ -106,6 +155,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noAppointmentsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
 });
 

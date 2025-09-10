@@ -122,6 +122,12 @@ export const isLanguageSupported = (language: string): language is SupportedLang
  * Initialize i18next
  */
 const initializeI18n = async (): Promise<void> => {
+  // Check if i18n is already initialized to prevent multiple initializations
+  if (i18n.isInitialized) {
+    console.log('ℹ️ i18n is already initialized, skipping initialization');
+    return;
+  }
+  
   const initialLanguage = await getInitialLanguage();
   
   await i18n
@@ -141,7 +147,7 @@ const initializeI18n = async (): Promise<void> => {
     });
 };
 
-// Initialize i18n
+// Initialize i18n only if not already initialized
 initializeI18n().catch((error) => {
   console.error('Failed to initialize i18n:', error);
 });

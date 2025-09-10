@@ -45,11 +45,25 @@ export class GalleryService {
   /**
    * Fetch gallery data from API
    */
-  async fetchGalleryData(): Promise<GalleryImage[]> {
+  async fetchGalleryData(): Promise<{ images: GalleryImage[]; albumLink: string | null }> {
     try {
-      const response = await apiService.get<{ items: any[] }>('me/album');
+      const response = await apiService.get<{
+        album_link?: string | null;
+        images?: Array<{
+          id: number;
+          path: string;
+          title?: string;
+          size?: number;
+          mime_type?: string;
+          created_at?: string;
+        }> | null;
+      }>('me/album');
       
-      return response.data.items.map((item: any) => ({
+      // Handle null/undefined cases safely
+      const images = response.data.images || [];
+      const albumLink = response.data.album_link || null;
+      
+      const processedImages = images.map((item) => ({
         id: item.id.toString(),
         path: item.path,
         url: `${apiService.baseURL}/${item.path}`,
@@ -60,8 +74,19 @@ export class GalleryService {
         createdAt: item.created_at,
         isSelected: false,
       }));
+
+      console.log('📸 Gallery data fetched:', {
+        imageCount: processedImages.length,
+        hasAlbumLink: !!albumLink,
+        albumLink: albumLink ? `${albumLink.substring(0, 50)}...` : null
+      });
+
+      return {
+        images: processedImages,
+        albumLink
+      };
     } catch (error) {
-      console.error('Failed to fetch gallery data:', error);
+      console.error('❌ Failed to fetch gallery data:', error);
       throw error;
     }
   }
@@ -290,47 +315,71 @@ export class GalleryService {
   }
 
   /**
-   * Download album (via API endpoint)
+   * Open album link (Google Drive) in external app/browser
    */
-  async downloadAlbum(): Promise<string> {
+  async openAlbumLink(albumLink?: string | null): Promise<string> {
     try {
-      // Check permissions
-      const hasPermissions = await permissionsService.hasRequiredPermissions();
-      if (!hasPermissions) {
-        const granted = await permissionsService.requestRequiredPermissions();
-        if (!granted) {
-          throw new Error('Storage permission is required to download album');
+      let finalAlbumLink = albumLink;
+
+      // If no album link provided, fetch from API
+      if (!finalAlbumLink) {
+        console.log('🔗 No album link provided, fetching from API...');
+        const galleryData = await this.fetchGalleryData();
+        finalAlbumLink = galleryData.albumLink;
+      }
+      
+      if (!finalAlbumLink) {
+        throw new Error('No album link available');
+      }
+
+      console.log('🔗 Opening Google Drive album:', finalAlbumLink);
+
+      // Open Google Drive link in external app/browser
+      const { Linking } = require('react-native');
+      
+      try {
+        // Try to open the URL directly - Linking.canOpenURL can be unreliable for some URLs
+        await Linking.openURL(finalAlbumLink);
+        
+        this.eventListeners.onDownloadComplete?.({
+          success: true,
+          filePath: finalAlbumLink,
+        });
+      } catch (linkingError) {
+        console.log('⚠️ Direct linking failed, trying canOpenURL check:', linkingError);
+        
+        // Fallback: check if URL can be opened
+        const canOpen = await Linking.canOpenURL(finalAlbumLink);
+        
+        if (canOpen) {
+          await Linking.openURL(finalAlbumLink);
+          
+          this.eventListeners.onDownloadComplete?.({
+            success: true,
+            filePath: finalAlbumLink,
+          });
+        } else {
+          throw new Error('Cannot open the album link. Please try opening it manually in your browser.');
         }
       }
 
-      // Fetch user data to get album link
-      const userResponse = await apiService.get<{ lead_details: { album_link?: string } }>('me');
-      const albumLink = userResponse.data.lead_details?.album_link;
-      
-      if (!albumLink) {
-        throw new Error('No album download link available');
-      }
-
-      // Download the album file
-      const result = await fileSystemService.downloadFile({
-        url: albumLink,
-        fileName: `album_${Date.now()}.zip`,
-      });
-
-      this.eventListeners.onDownloadComplete?.({
-        success: true,
-        filePath: result.path,
-      });
-
-      return result.path;
+      return finalAlbumLink;
     } catch (error) {
-      console.error('Failed to download album:', error);
+      console.error('❌ Failed to open album link:', error);
       this.eventListeners.onDownloadComplete?.({
         success: false,
-        error: error instanceof Error ? error.message : 'Album download failed',
+        error: error instanceof Error ? error.message : 'Failed to open album link',
       });
       throw error;
     }
+  }
+
+  /**
+   * @deprecated Use openAlbumLink instead
+   * Legacy method for backward compatibility
+   */
+  async downloadAlbum(albumLink?: string | null): Promise<string> {
+    return this.openAlbumLink(albumLink);
   }
 
   /**

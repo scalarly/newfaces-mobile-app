@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "545589970138",
+    "project_id": "newfacesmobile",
+    "storage_bucket": "newfacesmobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545589970138:android:58107b5ebe3992bf32d1e3",
+        "android_client_info": {
+          "package_name": "com.nfmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFKbxDGC2mlc3EF0xqUlxQRgrZkouaiaM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
