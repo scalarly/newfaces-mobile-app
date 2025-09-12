@@ -7,6 +7,7 @@ export type RootStackParamList = {
   Login: undefined;
   Main: undefined; // Tab Navigator
   ForgotPassword: undefined;
+  // Debug routes removed for production
   Loader: {
     message?: string;
   };
@@ -54,22 +55,30 @@ export type RootStackParamList = {
         name: string;
         italian_name: string;
       };
-      final_amount: number;
-      payment_type: 'full' | 'emi';
-      upfront_payments_details: Array<{
+      final_amount?: number;
+      payment_type?: 'full' | 'emi';
+      upfront_payments_details?: Array<{
         id: number;
         amount: number;
         due_date: string;
         payment_status: 'PAID' | 'UNPAID' | 'OVERDUE';
         payment_method?: string;
       }>;
-      installments_details: Array<{
+      installments_details?: Array<{
         id: number;
         amount: number;
         due_date: string;
-        payment_status: 'PAID' | 'UNPAID' | 'OVERDUE';
+        status?: string; // API returns 'status' field
+        payment_status?: 'PAID' | 'UNPAID' | 'OVERDUE';
+        payment_date?: string;
         payment_method?: string;
+        notes?: string;
       }>;
+      // Allow additional fields from package data
+      courses_start_date?: string;
+      courses_end_date?: string;
+      courses?: Array<any>;
+      [key: string]: any; // Allow any additional fields
     };
   };
   EMI: {

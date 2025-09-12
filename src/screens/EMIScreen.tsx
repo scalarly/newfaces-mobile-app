@@ -16,14 +16,17 @@ import { RootStackParamList } from '../navigation/types';
  * Replaces the legacy EMIScreen.js with modern TypeScript implementation
  */
 
-// Type definitions
+// Type definitions matching the API response
 interface InstallmentData {
   id: number;
   amount: number;
   due_date: string;
-  payment_status: 'PAID' | 'UNPAID' | 'OVERDUE';
-  payment_method?: string;
+  status?: string; // API returns 'status' field ("paid", "pending")
+  payment_status?: 'PAID' | 'UNPAID' | 'OVERDUE'; // Fallback for legacy
+  payment_date?: string | null;
+  payment_method?: string | null;
   installment_number?: number;
+  notes?: string;
 }
 
 type PaymentStatus = 'PAID' | 'UNPAID' | 'OVERDUE';
@@ -38,10 +41,24 @@ interface InstallmentItemProps {
 const EMIScreen: React.FC<Props> = ({ navigation, route }) => {
   const { data } = route.params;
 
+  console.log('EMIScreen received data:', data);
+  console.log('Data length:', data?.length);
+  console.log('Data structure:', JSON.stringify(data, null, 2));
+
   // Process installments with status calculation
   const processedInstallments = useMemo(() => {
-    return data.map((installment) => {
-      let status = installment.payment_status;
+    if (!data || !Array.isArray(data)) {
+      console.log('EMI data is not an array or is empty:', data);
+      return [];
+    }
+
+    return data.map((installment: InstallmentData) => {
+      // API returns 'status' field, not 'payment_status'
+      let status = installment.status || installment.payment_status;
+      
+      // Convert API status to expected format
+      if (status === 'paid') status = 'PAID';
+      if (status === 'pending') status = 'UNPAID';
       
       // Check if unpaid installment is overdue
       if (status === 'UNPAID') {
@@ -55,7 +72,7 @@ const EMIScreen: React.FC<Props> = ({ navigation, route }) => {
       
       return {
         ...installment,
-        calculatedStatus: status,
+        calculatedStatus: (status || 'UNPAID') as PaymentStatus,
       };
     });
   }, [data]);

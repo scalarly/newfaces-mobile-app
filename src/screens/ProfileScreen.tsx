@@ -66,6 +66,22 @@ interface Package {
   courses_start_date: string;
   courses_end_date: string;
   courses: Course[];
+  final_amount?: number;
+  payment_type?: 'full' | 'emi';
+  upfront_payments_details?: Array<{
+    id: number;
+    amount: number;
+    due_date: string;
+    payment_status: 'PAID' | 'UNPAID' | 'OVERDUE';
+    payment_method?: string;
+  }>;
+  installments_details?: Array<{
+    id: number;
+    amount: number;
+    due_date: string;
+    payment_status: 'PAID' | 'UNPAID' | 'OVERDUE';
+    payment_method?: string;
+  }>;
 }
 
 // RootStackParamList is now imported from navigation/types
@@ -194,6 +210,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </ScrollView>
       
+      {/* Debug buttons removed for production */}
+
       {/* Bottom Navigation */}
       <BottomNavigation 
         onLogout={handleLogout}
@@ -296,14 +314,14 @@ const Package: React.FC<PackageProps> = ({ data, navigation }) => {
         <Button
           text={t('mobile.profile.viewPaymentDetails')}
           onPress={() => {
-            navigation.navigate('Payments', { data: {
-              id: data.id,
-              package_details: data.package_details,
-              final_amount: 0, // This should be set from actual data
-              payment_type: 'emi' as const,
-              upfront_payments_details: [],
-              installments_details: []
-            }});
+            console.log('📦 Navigating to Payments with package data:', {
+              packageId: data.id,
+              packageDetails: data.package_details,
+              fullData: JSON.stringify(data, null, 2)
+            });
+            
+            // Pass the full package data just like legacy app does
+            navigation.navigate('Payments', { data });
           }}
         />
       </View>

@@ -97,18 +97,23 @@ const PaymentsScreen: React.FC<Props> = ({ navigation, route }) => {
     let totalResidual = 0;
     let residualPaid = 0;
 
-    // Calculate upfront payments
-    data.upfront_payments_details.forEach(payment => {
+    // Calculate upfront payments (handle missing data)
+    const upfrontPayments = data.upfront_payments_details || [];
+    upfrontPayments.forEach(payment => {
       totalUpfront += payment.amount;
-      if (payment.payment_status === 'PAID') {
+      // Note: upfront payments don't have status in API, assume paid if payment_date exists
+      if (payment.payment_date) {
         upfrontPaid += payment.amount;
       }
     });
 
-    // Calculate installments
-    data.installments_details.forEach(installment => {
+    // Calculate installments (handle missing data and correct status field)
+    const installments = data.installments_details || [];
+    installments.forEach(installment => {
       totalResidual += installment.amount;
-      if (installment.payment_status === 'PAID') {
+      // API uses 'status' field, not 'payment_status'
+      const status = installment.status || installment.payment_status;
+      if (status === 'paid' || status === 'PAID') {
         residualPaid += installment.amount;
       }
     });
@@ -125,7 +130,8 @@ const PaymentsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // Enhanced upfront payments with status
   const enhancedUpfrontPayments = useMemo(() => {
-    return data.upfront_payments_details.map(payment => {
+    const upfrontPayments = data.upfront_payments_details || [];
+    return upfrontPayments.map(payment => {
       let subLabel = '';
       let subLabelStyle = {};
 
@@ -158,8 +164,15 @@ const PaymentsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleViewEMI = () => {
+    const installmentsData = data.installments_details || [];
+    console.log('💳 PaymentsScreen navigating to EMI with data:', {
+      installmentsDetails: installmentsData,
+      installmentsLength: installmentsData.length,
+      fullPaymentData: JSON.stringify(data, null, 2)
+    });
+    
     navigation.navigate('EMI', {
-      data: data.installments_details,
+      data: installmentsData,
     });
   };
 
@@ -207,11 +220,11 @@ const PaymentsScreen: React.FC<Props> = ({ navigation, route }) => {
             <View style={styles.overviewSection}>
               <KeyValueItem
                 label="Total Amount"
-                value={`€${formatNumber(data.final_amount)}`}
+                value={`€${formatNumber(data.final_amount || 0)}`}
               />
               <KeyValueItem
                 label="Payment Type"
-                value={data.payment_type.toUpperCase()}
+                value={(data.payment_type || 'emi').toUpperCase()}
               />
             </View>
           </Card.Content>
@@ -256,7 +269,7 @@ const PaymentsScreen: React.FC<Props> = ({ navigation, route }) => {
         </Card>
 
         {/* EMI Section */}
-        {data.payment_type === 'emi' && (
+        {(data.payment_type === 'emi' || data.installments_details?.length > 0) && (
           <Card style={styles.sectionCard}>
             <Card.Content style={styles.sectionContent}>
               <View style={styles.sectionTitleRow}>

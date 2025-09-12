@@ -47,38 +47,54 @@ export class GalleryService {
    */
   async fetchGalleryData(): Promise<{ images: GalleryImage[]; albumLink: string | null }> {
     try {
-      const response = await apiService.get<{
-        album_link?: string | null;
-        images?: Array<{
-          id: number;
-          path: string;
-          title?: string;
-          size?: number;
-          mime_type?: string;
-          created_at?: string;
-        }> | null;
-      }>('me/album');
+      console.log('🔍 Fetching gallery data from API...');
       
-      // Handle null/undefined cases safely
-      const images = response.data.images || [];
-      const albumLink = response.data.album_link || null;
+      // Get gallery data from me/album endpoint (contains both images and album_link)
+      const galleryResponse = await apiService.get('me/album');
       
-      const processedImages = images.map((item) => ({
-        id: item.id.toString(),
-        path: item.path,
-        url: `${apiService.baseURL}/${item.path}`,
-        title: item.title || `Image ${item.id}`,
-        type: 'image' as const,
-        size: item.size,
-        mimeType: item.mime_type || 'image/jpeg',
-        createdAt: item.created_at,
-        isSelected: false,
-      }));
+      console.log('📡 Raw API response for me/album:', {
+        status: galleryResponse.status,
+        data: galleryResponse.data,
+        dataKeys: galleryResponse.data ? Object.keys(galleryResponse.data) : 'no data',
+        fullResponse: JSON.stringify(galleryResponse.data, null, 2)
+      });
 
-      console.log('📸 Gallery data fetched:', {
+      // According to API docs: response structure is { status, http_status, data: { album_link, images } }
+      const galleryData = galleryResponse.data.data || galleryResponse.data;
+      const images = galleryData?.images || [];
+      
+      // Album link is directly in the gallery response data
+      const albumLink = galleryData?.album_link || null;
+      
+      console.log('🔍 Album link extraction:', {
+        foundAlbumLink: albumLink,
+        albumLinkType: typeof albumLink,
+        albumLinkLength: albumLink?.length,
+        extractionPath: albumLink ? 'data.album_link' : 'not found'
+      });
+
+      // If images is an array directly (like legacy), process it
+      let processedImages: GalleryImage[] = [];
+      
+      if (Array.isArray(images)) {
+        processedImages = images.map((item) => ({
+          id: item.id?.toString() || `img_${Math.random()}`,
+          path: item.path || '',
+          url: `${apiService.baseURL}/${item.path}`,
+          title: item.title || `Image ${item.id}`,
+          type: 'image' as const,
+          size: item.size,
+          mimeType: item.mime_type || 'image/jpeg',
+          createdAt: item.created_at,
+          isSelected: false,
+        }));
+      }
+
+      console.log('📸 Final gallery data:', {
         imageCount: processedImages.length,
         hasAlbumLink: !!albumLink,
-        albumLink: albumLink ? `${albumLink.substring(0, 50)}...` : null
+        albumLink: albumLink ? `${albumLink.substring(0, 50)}...` : null,
+        sampleImage: processedImages[0] || 'no images'
       });
 
       return {
@@ -87,6 +103,11 @@ export class GalleryService {
       };
     } catch (error) {
       console.error('❌ Failed to fetch gallery data:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        response: (error as any)?.response?.data,
+        status: (error as any)?.response?.status
+      });
       throw error;
     }
   }

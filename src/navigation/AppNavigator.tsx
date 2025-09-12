@@ -13,8 +13,9 @@ import {
   EMIScreen,
   SwitchUserScreen,
   LoaderScreen,
-  // NotificationDebugScreen, // Removed from UI but kept for future use
+  // NotificationDebugScreen, // Removed for production
 } from '../screens';
+// import DebugAPIScreen from '../screens/DebugAPIScreen'; // Removed for production
 import TabNavigator from './TabNavigator';
 import { RootStackParamList } from './types';
 
@@ -119,17 +120,7 @@ const AppNavigator: React.FC = () => {
             presentation: 'modal',
           }}
         />
-        {/* NotificationDebug screen removed from navigation but kept for future use
-        <Stack.Screen
-          name="NotificationDebug"
-          component={NotificationDebugScreen}
-          options={{
-            title: 'Notification Debug',
-            headerShown: false,
-            presentation: 'modal',
-          }}
-        />
-        */}
+        {/* Debug screens removed for production */}
       </Stack.Navigator>
     </>
   );

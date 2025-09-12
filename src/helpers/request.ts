@@ -3,7 +3,8 @@ import SecureStorage from './secureStorage';
 
 // API configuration constants
 const API_CONFIG = {
-  BASE_URL: 'https://crm.nfsacademy.it',
+  // BASE_URL: 'http://localhost:5000', // Development environment (if backend is local)
+  BASE_URL: 'https://crm.nfsacademy.it', // Production environment (working endpoint)
   API_VERSION: 'v1',
 } as const;
 
@@ -86,22 +87,40 @@ class ApiService {
       async (config) => {
         try {
           const userToken = await SecureStorage.getItem('userToken');
+          
           if (userToken) {
             config.headers.Authorization = `Bearer ${userToken}`;
+          } else {
+            console.warn('⚠️ No userToken found in SecureStorage - API call may fail');
           }
         } catch (error) {
-          console.warn('Failed to get user token from secure storage:', error);
+          console.warn('❌ Failed to get user token from secure storage:', error);
         }
         return config;
       },
       (error) => {
+        console.error('❌ Request interceptor error:', error);
         return Promise.reject(error);
       }
     );
 
     // Response interceptor - handle errors
     this.axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => response,
+      (response: AxiosResponse) => {
+        // Only log HTML detection as warning, don't throw error
+        const contentType = response.headers['content-type'] || '';
+        const responseData = response.data;
+        
+        if (contentType.includes('text/html') || (typeof responseData === 'string' && responseData.includes('<!DOCTYPE html>'))) {
+          console.warn('⚠️ API returned HTML instead of JSON - possible authentication issue', {
+            url: response.config?.url,
+            status: response.status,
+            contentType
+          });
+        }
+        
+        return response;
+      },
       (error: AxiosError) => {
         this.handleApiError(error);
         return Promise.reject(error);
@@ -238,6 +257,37 @@ class ApiService {
     };
 
     return this.request<T>(HttpMethod.POST, endpoint, formData, uploadOptions);
+  }
+
+  /**
+   * Check if user is authenticated by verifying token exists and is valid
+   */
+  async checkAuth(): Promise<{ isAuthenticated: boolean; token?: string; error?: string }> {
+    try {
+      const userToken = await SecureStorage.getItem('userToken');
+      
+      console.log('🔍 Auth Check:', {
+        hasToken: !!userToken,
+        tokenPreview: userToken ? `${userToken.substring(0, 20)}...` : 'No token'
+      });
+      
+      if (!userToken) {
+        return { isAuthenticated: false, error: 'No token found' };
+      }
+
+      // Try a simple API call to verify token is valid
+      try {
+        const response = await this.get('me');
+        console.log('✅ Auth check successful - token is valid');
+        return { isAuthenticated: true, token: userToken };
+      } catch (error) {
+        console.error('❌ Auth check failed - token invalid:', error);
+        return { isAuthenticated: false, token: userToken, error: 'Token invalid or expired' };
+      }
+    } catch (error) {
+      console.error('❌ Auth check error:', error);
+      return { isAuthenticated: false, error: `Auth check failed: ${error}` };
+    }
   }
 }
 

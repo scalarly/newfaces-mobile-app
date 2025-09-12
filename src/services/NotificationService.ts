@@ -287,6 +287,8 @@ export class NotificationService {
    */
   private async syncTokenWithBackend(token: string): Promise<void> {
     try {
+      console.log('🔍 Starting token sync process...');
+      
       // Get user data from 'me' endpoint (exactly like legacy)
       const userResponse = await apiService.get('me');
       
@@ -296,11 +298,21 @@ export class NotificationService {
       }
 
       const userId = userResponse.data.data.id;
+      const existingToken = userResponse.data.data.expo_token;
       
-      // Check if token already exists (like legacy)
-      if (userResponse.data.data.expo_token === token) {
+      console.log('🔍 Token comparison:', {
+        userId,
+        existingToken: existingToken ? `${existingToken.substring(0, 30)}...` : 'NULL/EMPTY',
+        newToken: `${token.substring(0, 30)}...`,
+        tokensMatch: existingToken === token
+      });
+      
+      // Always sync token to ensure it's current (important for dev/prod environment changes)
+      if (existingToken === token) {
         console.log('✅ Push token already up to date');
         return;
+      } else {
+        console.log(`🔄 Updating token: ${existingToken ? 'Token changed' : 'No token stored'}`);
       }
 
       // Use the exact same API structure as legacy app
@@ -310,10 +322,26 @@ export class NotificationService {
         }
       };
 
+      console.log('📤 Sending PATCH request to update token...');
       const response = await apiService.patch(`users/${userId}`, requestData);
 
       if (response.status === 200) {
         console.log('✅ Push token synced with backend (expo_token field)');
+        
+        // Verify the update by checking the database again
+        setTimeout(async () => {
+          try {
+            const verifyResponse = await apiService.get('me');
+            const updatedToken = verifyResponse.data.data.expo_token;
+            console.log('🔍 Verification check - Token in DB:', updatedToken ? `${updatedToken.substring(0, 30)}...` : 'NULL/EMPTY');
+            
+            if (updatedToken !== token) {
+              console.warn('⚠️ WARNING: Token verification failed! Database token does not match sent token');
+            }
+          } catch (error) {
+            console.error('❌ Error verifying token update:', error);
+          }
+        }, 2000);
       }
     } catch (error) {
       console.error('❌ Error syncing push token with backend:', error);
@@ -416,13 +444,58 @@ export class NotificationService {
   /**
    * Set up app state change handlers
    */
+  private lastSyncTime = 0;
+  
   private setupAppStateHandlers(): void {
     AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active') {
         // Clear notification badges when app becomes active
         this.clearNotificationBadges();
+        
+        // Only re-sync token if it's been more than 30 seconds since last sync
+        const now = Date.now();
+        if (now - this.lastSyncTime > 30000) {
+          console.log('📱 App became active, checking token sync...');
+          this.lastSyncTime = now;
+          this.ensureTokenSync();
+        } else {
+          console.log('⏭️ Skipping token sync - too recent');
+        }
       }
     });
+  }
+
+  /**
+   * Ensure token is synced with backend (called on app foreground)
+   */
+  private isSyncing = false; // Prevent multiple simultaneous syncs
+  
+  private async ensureTokenSync(): Promise<void> {
+    // Prevent multiple simultaneous syncs
+    if (this.isSyncing) {
+      console.log('⏳ Token sync already in progress, skipping...');
+      return;
+    }
+
+    try {
+      this.isSyncing = true;
+      
+      if (this.pushToken) {
+        console.log('🔄 Re-syncing token on app foreground...');
+        console.log('📱 Current token:', this.pushToken.substring(0, 30) + '...');
+        
+        // Wait a bit to avoid race conditions with other initialization
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
+        
+        await this.syncTokenWithBackend(this.pushToken);
+      } else {
+        console.log('⚠️ No push token available for sync');
+      }
+    } catch (error) {
+      console.error('❌ Error ensuring token sync:', error);
+    } finally {
+      this.isSyncing = false;
+    }
   }
 
   /**
@@ -469,11 +542,13 @@ export class NotificationService {
       switch (type) {
         case NotificationType.EMAIL:
         case NotificationType.MESSAGE:
-          this.navigationRef.current.navigate('Messages');
+          // Navigate to the Messages tab in the TabNavigator
+          this.navigationRef.current.navigate('Main', { screen: 'MessagesTab' });
           break;
         
         case NotificationType.APPOINTMENT:
-          this.navigationRef.current.navigate('Calendar');
+          // Navigate to the Calendar tab in the TabNavigator
+          this.navigationRef.current.navigate('Main', { screen: 'CalendarTab' });
           break;
         
         case NotificationType.PAYMENT:

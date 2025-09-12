@@ -55,6 +55,73 @@ const NotificationDebugScreen: React.FC = () => {
   };
 
   /**
+   * Test FCM token for backend integration
+   */
+  const handleFCMTokenTest = async () => {
+    try {
+      if (token) {
+        console.log('🔥 FCM Token for Backend Testing:');
+        console.log(token);
+        console.log('📱 Use this token to send push notifications from your backend');
+        
+        Alert.alert(
+          'FCM Token Ready', 
+          'Token copied to console. Check the logs to copy the FCM token for backend testing.',
+          [
+            { text: 'OK' },
+            { 
+              text: 'Copy Short Version', 
+              onPress: () => console.log('Short token:', token.substring(0, 50) + '...') 
+            }
+          ]
+        );
+      } else {
+        Alert.alert('No Token', 'FCM token not available. Make sure notifications are enabled.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get FCM token.');
+    }
+  };
+
+  /**
+   * Check if FCM token is stored in database
+   */
+  const handleCheckTokenInDB = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Import apiService here to avoid dependency issues
+      const { apiService } = await import('../helpers/request');
+      
+      const response = await apiService.get('me');
+      const userData = response.data.data;
+      
+      console.log('👤 User Data from /me:', userData);
+      console.log('🔑 expo_token in DB:', userData.expo_token);
+      console.log('📱 Current FCM Token:', token);
+      
+      const dbToken = userData.expo_token;
+      const isStored = !!dbToken;
+      const isMatching = dbToken === token;
+      
+      Alert.alert(
+        'Token Database Status',
+        `Database Token: ${isStored ? 'EXISTS' : 'NULL/EMPTY'}\n` +
+        `Current Token: ${token ? 'EXISTS' : 'NULL'}\n` +
+        `Tokens Match: ${isMatching ? 'YES ✅' : 'NO ❌'}\n\n` +
+        `${!isStored ? 'Token not stored in database!' : ''}` +
+        `${isStored && !isMatching ? 'Tokens don\'t match - sync issue!' : ''}`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('❌ Failed to check token in DB:', error);
+      Alert.alert('Error', 'Failed to check token status in database');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
    * Test scheduled notification
    */
   const testScheduled = async () => {
@@ -213,6 +280,18 @@ const NotificationDebugScreen: React.FC = () => {
           <TestButton
             title="⚙️ Get Notification Settings"
             onPress={handleGetSettings}
+            disabled={isLoading}
+          />
+          
+          <TestButton
+            title="🔥 Get FCM Token for Backend Testing"
+            onPress={handleFCMTokenTest}
+            disabled={isLoading || !token}
+          />
+          
+          <TestButton
+            title="🗄️ Check Token in Database"
+            onPress={handleCheckTokenInDB}
             disabled={isLoading}
           />
         </View>

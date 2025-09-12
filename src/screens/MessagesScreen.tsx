@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Surface,
   Text,
@@ -56,6 +57,7 @@ interface MessageItem {
   text: string;
   unread_count: number;
   created_at: string;
+  contact?: string;
 }
 
 type MessageType = 'email' | 'whatsapp';
@@ -89,36 +91,77 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
   // Load data
   const loadEmails = useCallback(async () => {
     try {
-      // Use the same endpoint as legacy: 'me/email-logs'
       const response = await apiService.get('me/email-logs');
       setEmailItems(response.data.data || []);
-    } catch (error) {
-      console.error('Error loading emails:', error);
-      Alert.alert('Error', 'Failed to load emails');
+    } catch (error: any) {
+      console.error('❌ Error loading emails:', error);
+      
+      // Don't show alert for network errors in development
+      if (error?.message !== 'Network Error') {
+        Alert.alert('Error', 'Failed to load emails');
+      }
+      
+      // Set empty array to show "No emails found" instead of error
+      setEmailItems([]);
     }
   }, []);
 
   const loadMessages = useCallback(async () => {
     try {
-      // Use modern userId hook instead of SecureStorage
-      if (userId) {
-        const response = await apiService.get(`whatsapp-conversations?id_lead=${userId}`);
-        setMessageItems(response.data.data || []);
+      // First get user profile to get lead ID (as per API documentation)
+      const userResponse = await apiService.get('me');
+      const leadId = userResponse.data.data?.lead_details?.id || userResponse.data.data?.id;
+      
+      if (leadId) {
+        const response = await apiService.get(`whatsapp-conversations?id_lead=${leadId}`);
+        
+        // Process the response according to API documentation
+        const conversations = response.data.data || [];
+        const processedMessages = conversations.map((conversation: any) => ({
+          id: conversation.id,
+          moderator_details: conversation.moderator_details || { first_name: 'Unknown' },
+          text: conversation.last_message?.text || 'No message content',
+          unread_count: conversation.unread_count || 0,
+          created_at: conversation.last_message?.created_at || conversation.created_at,
+          contact: conversation.contact
+        }));
+        
+        setMessageItems(processedMessages);
       } else {
-        console.log('No userId found, loading conversations without filter');
         const response = await apiService.get('whatsapp-conversations');
-        setMessageItems(response.data.data || []);
+        
+        // Process conversations without lead filter
+        const conversations = response.data.data || [];
+        const processedMessages = conversations.map((conversation: any) => ({
+          id: conversation.id,
+          moderator_details: conversation.moderator_details || { first_name: 'Unknown' },
+          text: conversation.last_message?.text || 'No message content',
+          unread_count: conversation.unread_count || 0,
+          created_at: conversation.last_message?.created_at || conversation.created_at,
+          contact: conversation.contact
+        }));
+        
+        setMessageItems(processedMessages);
       }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      Alert.alert('Error', 'Failed to load messages');
+    } catch (error: any) {
+      console.error('❌ Error loading messages:', error);
+      
+      // Don't show alert for network errors in development
+      if (error?.message !== 'Network Error') {
+        Alert.alert('Error', 'Failed to load messages');
+      }
+      
+      // Set empty array to show "No messages found" instead of error
+      setMessageItems([]);
     }
-  }, [userId]);
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       await Promise.all([loadEmails(), loadMessages()]);
+    } catch (error: any) {
+      console.error('❌ Error loading data:', error);
     } finally {
       setLoading(false);
     }
@@ -133,17 +176,19 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [loadData]);
 
-  // Load data on mount and set up refresh interval
-  useEffect(() => {
-    loadData();
-
-    // Set up auto-refresh every 5 seconds
-    const interval = setInterval(() => {
+  // Load data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
       loadData();
-    }, 5000);
+      
+      // Optional: Set up a less frequent refresh only when screen is focused
+      const interval = setInterval(() => {
+        loadData();
+      }, 30000); // Refresh every 30 seconds instead of 5
 
-    return () => clearInterval(interval);
-  }, [loadData]);
+      return () => clearInterval(interval);
+    }, [loadData])
+  );
 
   // Navigation handlers
   const handleEmailPress = useCallback((item: EmailItem) => {
