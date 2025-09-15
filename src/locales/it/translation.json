@@ -70,6 +70,15 @@
       "passwordMinLength": "La password deve essere di almeno 6 caratteri"
     }
   },
+  "switchUser": {
+    "title": "Cambia Utente",
+    "selectUser": "Seleziona un utente a cui passare",
+    "currentUser": "Utente Corrente",
+    "switchTo": "Passa a",
+    "noOtherUsers": "Nessun altro utente disponibile",
+    "switchingUser": "Cambio utente...",
+    "switchFailed": "Impossibile cambiare utente"
+  },
   "mobile": {
     "titles": {
       "calendar": "Calendario",
@@ -186,6 +195,61 @@
       "loggingOut": "Disconnessione...",
       "logoutFailed": "Disconnessione fallita"
     },
+    "forgotPassword": {
+      "title": "Password Dimenticata",
+      "subtitle": "Inserisci la tua email per reimpostare la password",
+      "emailSent": "Link di reset inviato alla tua email",
+      "backToLogin": "Torna al Login",
+      "resetPassword": "Reimposta Password",
+      "invalidEmail": "Inserisci un indirizzo email valido"
+    },
+    "errors": {
+      "networkError": "Errore di connessione di rete",
+      "serverError": "Si è verificato un errore del server",
+      "unknownError": "Si è verificato un errore sconosciuto",
+      "timeoutError": "Timeout della richiesta",
+      "authenticationFailed": "Autenticazione fallita",
+      "sessionExpired": "Sessione scaduta, effettua nuovamente il login",
+      "accessDenied": "Accesso negato",
+      "notFound": "Risorsa non trovata",
+      "validationFailed": "Validazione fallita"
+    },
+    "forms": {
+      "required": "Questo campo è obbligatorio",
+      "optional": "Opzionale",
+      "create": "Crea",
+      "update": "Aggiorna",
+      "submit": "Invia",
+      "reset": "Reset",
+      "clear": "Pulisci",
+      "search": "Cerca",
+      "filter": "Filtro",
+      "apply": "Applica",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "delete": "Elimina",
+      "edit": "Modifica",
+      "view": "Visualizza",
+      "close": "Chiudi",
+      "back": "Indietro",
+      "next": "Avanti",
+      "previous": "Precedente",
+      "finish": "Finisci",
+      "continue": "Continua",
+      "skip": "Salta"
+    },
+    "status": {
+      "active": "Attivo",
+      "inactive": "Inattivo",
+      "pending": "In attesa",
+      "approved": "Approvato",
+      "rejected": "Rifiutato",
+      "completed": "Completato",
+      "cancelled": "Annullato",
+      "expired": "Scaduto",
+      "draft": "Bozza",
+      "published": "Pubblicato"
+    },
     "navigation": {
       "home": "Home",
       "back": "Indietro",
@@ -203,7 +267,18 @@
       "emptyList": "Lista vuota",
       "retry": "Riprova",
       "internetRequired": "Connessione internet richiesta",
-      "somethingWentWrong": "Qualcosa è andato storto"
+      "somethingWentWrong": "Qualcosa è andato storto",
+      "offline": "Sei offline",
+      "online": "Sei online",
+      "syncInProgress": "Sincronizzazione dati...",
+      "syncCompleted": "Dati sincronizzati con successo",
+      "syncFailed": "Sincronizzazione fallita",
+      "dataUpdated": "Dati aggiornati",
+      "noDataToDisplay": "Nessun dato da visualizzare",
+      "loadingMore": "Caricamento altro...",
+      "endOfList": "Fine della lista",
+      "swipeToRefresh": "Scorri verso il basso per aggiornare",
+      "tapToRetry": "Tocca per riprovare"
     }
   },
   "menu": {

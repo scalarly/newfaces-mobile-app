@@ -32,7 +32,7 @@ interface CustomTextProps extends RNTextProps {
 export const Text = forwardRef<RNText, CustomTextProps>(({
   size = 'body',
   weight = 'regular',
-  color = 'text',
+  color = 'textPrimary',
   textTransform = 'none',
   dimRate,
   variant,
@@ -79,11 +79,16 @@ export const Text = forwardRef<RNText, CustomTextProps>(({
     // Check if color is a theme color key
     if (color in colors) {
       const themeColor = theme.colors[color as keyof typeof theme.colors];
-      return typeof themeColor === 'string' ? themeColor : theme.colors.onSurface;
+      return typeof themeColor === 'string' ? themeColor : colors.textPrimary;
     }
 
-    // Custom color string
-    return color;
+    // Check if it's a custom color from our colors object
+    if (color in colors) {
+      return colors[color as keyof typeof colors];
+    }
+
+    // Custom color string or fallback
+    return typeof color === 'string' ? color : colors.textPrimary;
   };
 
   const finalColor = getTextColor();

@@ -289,6 +289,13 @@ export class NotificationService {
     try {
       console.log('🔍 Starting token sync process...');
       
+      // Check if user is authenticated before attempting sync
+      const authCheck = await apiService.checkAuth();
+      if (!authCheck.isAuthenticated) {
+        console.log('⚠️ User not authenticated, skipping token sync');
+        return;
+      }
+      
       // Get user data from 'me' endpoint (exactly like legacy)
       const userResponse = await apiService.get('me');
       
@@ -880,6 +887,18 @@ export class NotificationService {
     } catch (error) {
       console.error('❌ Error refreshing FCM token:', error);
       return null;
+    }
+  }
+
+  /**
+   * Manually sync token with backend (call after authentication)
+   */
+  async syncToken(): Promise<void> {
+    if (this.pushToken) {
+      console.log('🔄 Manually syncing token after authentication...');
+      await this.syncTokenWithBackend(this.pushToken);
+    } else {
+      console.log('⚠️ No push token available for manual sync');
     }
   }
 

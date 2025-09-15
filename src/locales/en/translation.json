@@ -70,6 +70,15 @@
       "passwordMinLength": "Password must be at least 6 characters"
     }
   },
+  "switchUser": {
+    "title": "Switch User",
+    "selectUser": "Select a user to switch to",
+    "currentUser": "Current User",
+    "switchTo": "Switch to",
+    "noOtherUsers": "No other users available",
+    "switchingUser": "Switching user...",
+    "switchFailed": "Failed to switch user"
+  },
   "mobile": {
     "titles": {
       "calendar": "Calendar",
@@ -186,6 +195,61 @@
       "loggingOut": "Logging out...",
       "logoutFailed": "Logout failed"
     },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email to reset password",
+      "emailSent": "Reset link sent to your email",
+      "backToLogin": "Back to Login",
+      "resetPassword": "Reset Password",
+      "invalidEmail": "Please enter a valid email address"
+    },
+    "errors": {
+      "networkError": "Network connection error",
+      "serverError": "Server error occurred",
+      "unknownError": "An unknown error occurred",
+      "timeoutError": "Request timeout",
+      "authenticationFailed": "Authentication failed",
+      "sessionExpired": "Session expired, please login again",
+      "accessDenied": "Access denied",
+      "notFound": "Resource not found",
+      "validationFailed": "Validation failed"
+    },
+    "forms": {
+      "required": "This field is required",
+      "optional": "Optional",
+      "create": "Create",
+      "update": "Update",
+      "submit": "Submit",
+      "reset": "Reset",
+      "clear": "Clear",
+      "search": "Search",
+      "filter": "Filter",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "view": "View",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Finish",
+      "continue": "Continue",
+      "skip": "Skip"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "draft": "Draft",
+      "published": "Published"
+    },
     "navigation": {
       "home": "Home",
       "back": "Back",
@@ -203,7 +267,18 @@
       "emptyList": "List is empty",
       "retry": "Retry",
       "internetRequired": "Internet connection required",
-      "somethingWentWrong": "Something went wrong"
+      "somethingWentWrong": "Something went wrong",
+      "offline": "You are offline",
+      "online": "You are online",
+      "syncInProgress": "Syncing data...",
+      "syncCompleted": "Data synced successfully",
+      "syncFailed": "Sync failed",
+      "dataUpdated": "Data updated",
+      "noDataToDisplay": "No data to display",
+      "loadingMore": "Loading more...",
+      "endOfList": "End of list",
+      "swipeToRefresh": "Swipe down to refresh",
+      "tapToRetry": "Tap to retry"
     }
   },
   "menu": {

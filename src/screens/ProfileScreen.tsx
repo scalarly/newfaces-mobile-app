@@ -18,10 +18,13 @@ import { getFullName, getDisplayName, getUserInitials, getFormattedLocation } fr
 import { formatDate, formatDateShort } from '../helpers/dateUtils';
 import { colors, spacing } from '../helpers/theme';
 import { apiService } from '../helpers/request';
-import { SecureStorage } from '../helpers/secureStorage';
 import { Text } from '../components/Typography';
 import { Header } from '../components/Header';
 import { BottomNavigation } from '../components/BottomNavigation';
+import { createLogoutHandler } from '../helpers/authUtils';
+import { createSimpleLogoutHandler } from '../helpers/simpleLogout';
+import { createSafeLogoutHandler } from '../helpers/safeLogout';
+import { createEmergencyLogoutHandler, navigationOnlyLogout } from '../helpers/emergencyLogout';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { RootStackParamList } from '../navigation/types';
 
@@ -114,18 +117,16 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       });
   }, []);
 
-  const handleLogout = async () => {
+  // Test navigation-only logout to isolate the bridge error source
+  const handleLogout = () => {
     try {
-      await SecureStorage.removeItem('userToken');
-      await SecureStorage.removeItem('leadID');
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
+      console.log('🔍 ProfileScreen: Testing navigation-only logout');
+      navigationOnlyLogout(navigation);
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('❌ Navigation-only logout failed:', error);
     }
   };
+  console.log('🔍 ProfileScreen: Created navigation-only logout handler');
 
   // Notification debug functionality removed from UI but kept for future use
   // const handleNotificationDebug = () => {
@@ -421,6 +422,7 @@ const styles = StyleSheet.create({
   profileDOBText: {
     left: 8,
     fontSize: 12,
+    color: '#666666', // Explicit color for visibility
   },
   topCalendarIcon: {
     marginRight: 4,
@@ -505,7 +507,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   courseName: {
-    color: '#666',
+    color: '#666666', // Ensure consistent color format
     marginTop: 5,
     marginBottom: 2,
   },

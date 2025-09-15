@@ -32,6 +32,10 @@ import { formatDate, getRelativeTime } from '../helpers/dateUtils';
 import { colors, spacing } from '../helpers/theme';
 import { apiService } from '../helpers/request';
 import { Header, BottomNavigation } from '../components';
+import { createLogoutHandler } from '../helpers/authUtils';
+import { createSimpleLogoutHandler } from '../helpers/simpleLogout';
+import { createSafeLogoutHandler } from '../helpers/safeLogout';
+import { createEmergencyLogoutHandler } from '../helpers/emergencyLogout';
 
 
 // Type definitions
@@ -375,7 +379,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation onLogout={createEmergencyLogoutHandler(navigation)} />
     </SafeAreaView>
   );
 };

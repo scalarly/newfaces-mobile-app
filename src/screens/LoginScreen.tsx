@@ -53,6 +53,7 @@ interface Props {
 }
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  console.log('🔑 LoginScreen rendered');
   // Modern hooks
   const { t } = useTranslation();
   const { login: setUserToken } = useUserToken();
@@ -109,6 +110,15 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         console.log('Token to store:', directResult.data.data.access_token);
         await setUserToken(directResult.data.data.access_token);
         console.log('Token stored, navigating to Home...');
+        
+        // Sync notification token after successful login
+        try {
+          const { notificationService } = await import('../services/NotificationService');
+          await notificationService.syncToken();
+        } catch (error) {
+          console.warn('⚠️ Failed to sync notification token after login:', error);
+        }
+        
                       navigation.navigate('Main');
         return;
       }
@@ -125,6 +135,14 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         
         // Store the token securely using modern hook
         await setUserToken(result.access_token);
+        
+        // Sync notification token after successful login
+        try {
+          const { notificationService } = await import('../services/NotificationService');
+          await notificationService.syncToken();
+        } catch (error) {
+          console.warn('⚠️ Failed to sync notification token after login:', error);
+        }
         
         console.log('Token stored, navigating to Home...');
         // Navigate to home screen

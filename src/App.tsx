@@ -76,6 +76,9 @@ const AppWithNotifications: React.FC = () => {
     }
   }, [token, isEnabled, isLoading, error]);
 
+  // Add debug logging for App component
+  console.log('🚀 AppWithNotifications rendering - isLoading:', isLoading);
+
   return (
     <NavigationContainer ref={navigationRef}>
       <AppNavigator />

@@ -30,17 +30,34 @@ export class SecureStorage {
   }
 
   /**
-   * Remove a value from the keychain
+   * Remove a value from the keychain with verification
    */
-  static async removeItem(key: string): Promise<void> {
+  static async removeItem(key: string): Promise<boolean> {
     try {
-      // For react-native-keychain, we just clear the generic password for this implementation
-      // A more sophisticated approach would be to track keys separately
-      console.log(`Removing keychain item: ${key}`);
-      await Keychain.resetGenericPassword();
+      console.log(`🔍 Removing keychain item: ${key}`);
+      
+      // Use resetInternetCredentials to match the setInternetCredentials/getInternetCredentials pattern
+      const result = await Keychain.resetInternetCredentials(key);
+      console.log(`✅ Keychain reset result for ${key}:`, result);
+      
+      // Verify the item was actually removed
+      try {
+        const verifyResult = await Keychain.getInternetCredentials(key);
+        if (verifyResult && verifyResult.password) {
+          console.warn(`⚠️ ${key} still exists after removal attempt`);
+          return false;
+        } else {
+          console.log(`✅ Verified ${key} was successfully removed`);
+          return true;
+        }
+      } catch (verifyError) {
+        // If getInternetCredentials throws an error, it likely means the item doesn't exist
+        console.log(`✅ ${key} removal verified (not found in keychain)`);
+        return true;
+      }
     } catch (error) {
-      console.error(`Failed to remove ${key} from keychain:`, error);
-      throw error;
+      console.error(`❌ Failed to remove ${key} from keychain:`, error);
+      return false;
     }
   }
 

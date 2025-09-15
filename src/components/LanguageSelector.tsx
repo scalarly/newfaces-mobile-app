@@ -222,7 +222,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           onPress={() => setIsModalVisible(false)}
         >
           <Layout
-            backgroundColor={colors.surface}
+            backgroundColor="#FFFFFF"
             borderRadius="lg"
             padding="lg"
             style={styles.modalContent}
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better contrast
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,
@@ -305,6 +305,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     textAlign: 'center',
     marginBottom: spacing.md,
+    color: colors.onSurface, // Explicit color for visibility
   },
   languageList: {
     maxHeight: 300,
@@ -316,6 +317,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xs,
+    backgroundColor: 'transparent',
   },
   selectedLanguageItem: {
     backgroundColor: colors.primaryVariant,

@@ -8,9 +8,6 @@ export type RootStackParamList = {
   Main: undefined; // Tab Navigator
   ForgotPassword: undefined;
   // Debug routes removed for production
-  Loader: {
-    message?: string;
-  };
   Email: {
     data: {
       id: number;

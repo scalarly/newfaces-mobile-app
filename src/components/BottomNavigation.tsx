@@ -83,12 +83,26 @@ export const BottomNavigation = forwardRef<RNView, BottomNavigationProps>(({
   };
 
   const handleLogoutPress = () => {
+    console.log('🔍 Logout button pressed, showing confirmation dialog');
     setShowLogoutConfirm(true);
   };
 
-  const handleLogoutConfirm = () => {
-    setShowLogoutConfirm(false);
-    onLogout?.();
+  const handleLogoutConfirm = async () => {
+    try {
+      console.log('🔍 Logout confirmation pressed, hiding dialog and calling onLogout');
+      setShowLogoutConfirm(false);
+      if (onLogout) {
+        console.log('🔍 onLogout callback exists, calling it...');
+        await onLogout();
+        console.log('✅ onLogout callback completed');
+      } else {
+        console.warn('⚠️ No onLogout callback provided');
+      }
+    } catch (error) {
+      console.error('❌ Logout confirmation failed:', error);
+      // Still hide the confirmation dialog even if logout fails
+      setShowLogoutConfirm(false);
+    }
   };
 
   const allItems: NavItem[] = showLogout 

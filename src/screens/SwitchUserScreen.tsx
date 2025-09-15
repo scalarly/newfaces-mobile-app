@@ -19,6 +19,10 @@ import {
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { CommonActions } from '@react-navigation/native';
+import { simpleLogout } from '../helpers/simpleLogout';
+import { safeLogout } from '../helpers/safeLogout';
+import { emergencyLogout } from '../helpers/emergencyLogout';
 
 import { apiService } from '../helpers/request';
 import { isValidEmail } from '../helpers/applicationUtils';
@@ -186,8 +190,30 @@ const SwitchUserScreen: React.FC<Props> = ({ navigation }) => {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            await setUserToken('');
-            navigation.navigate('Login');
+            try {
+              console.log('🚨 Starting emergency logout from SwitchUserScreen...');
+              
+              // Clear token using hook first
+              await setUserToken('');
+              
+              // Use emergency logout to completely avoid bridge issues
+              await emergencyLogout(navigation);
+              
+              console.log('✅ Emergency logout completed');
+            } catch (error) {
+              console.error('❌ Emergency logout error:', error);
+              // Force navigation as last resort
+              try {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  })
+                );
+              } catch (navError) {
+                console.error('❌ Force navigation failed:', navError);
+              }
+            }
           },
         },
       ]

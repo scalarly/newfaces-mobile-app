@@ -6,6 +6,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Header, BottomNavigation, Image } from '../components';
 import { useCollection } from '../hooks/useCollection';
+import { createLogoutHandler } from '../helpers/authUtils';
+import { createSimpleLogoutHandler } from '../helpers/simpleLogout';
+import { createSafeLogoutHandler } from '../helpers/safeLogout';
+import { createEmergencyLogoutHandler } from '../helpers/emergencyLogout';
 import { colors, spacing } from '../helpers/theme';
 import { formatTime, formatDate } from '../helpers/dateUtils';
 import { getMap } from '../helpers/generalUtils';
@@ -186,7 +190,7 @@ const SMSScreen = ({ navigation, route }: Props) => {
       />
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation onLogout={createEmergencyLogoutHandler(navigation)} />
     </SafeAreaView>
   );
 };
