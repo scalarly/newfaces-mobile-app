@@ -88,13 +88,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.nfmobile"
+    namespace "com.nfsacademy.app"
     defaultConfig {
-        applicationId "com.nfmobile"
+        applicationId "com.nfsacademy.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 10
+        versionName "0.2.2"
     }
 
     // Fix for duplicate classes between AndroidX and support library
@@ -112,15 +112,20 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('upload-keystore.keystore')
+            storePassword 'nfsacademy123'
+            keyAlias 'upload'
+            keyPassword 'nfsacademy123'
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Using upload keystore for production releases
+            signingConfig signingConfigs.release
             minifyEnabled false // Temporarily disabled to fix crash issues
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

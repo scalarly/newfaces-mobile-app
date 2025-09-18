@@ -1,4 +1,4 @@
-package com.nfmobile
+package com.nfsacademy.app
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

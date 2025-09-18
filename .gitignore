@@ -31,8 +31,19 @@ local.properties
 *.iml
 *.hprof
 .cxx/
+# Android Signing Files - NEVER COMMIT THESE!
 *.keystore
 !debug.keystore
+*.jks
+*.p8
+*.p12
+*.pem
+upload_certificate.pem
+upload-keystore.keystore
+release.keystore
+app-signing.keystore
+key.properties
+signing.properties
 .kotlin/
 
 # node.js
@@ -73,3 +84,20 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Security & Sensitive Files
+.env
+.env.local
+.env.production
+.env.staging
+secrets/
+secure-keys-backup/
+*.key
+*.crt
+*.cert
+google-services.json.backup
+GoogleService-Info.plist.backup
+
+# IDE specific
+.vscode/settings.json
+.idea/workspace.xml

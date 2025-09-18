@@ -1,4 +1,4 @@
-package com.nfmobile
+package com.nfsacademy.app
 
 import android.app.Application
 import com.facebook.react.PackageList
